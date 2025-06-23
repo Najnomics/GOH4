@@ -65,7 +65,7 @@ contract CoverageReportTest is Test {
         
         console.log("Total Components Implemented:", components.length);
         for (uint i = 0; i < components.length; i++) {
-            console.log(string(abi.encodePacked("✅ ", components[i])));
+            console.log(string(abi.encodePacked("=> ", components[i])));
         }
     }
 }
