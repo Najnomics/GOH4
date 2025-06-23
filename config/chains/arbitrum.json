@@ -1,0 +1,31 @@
+{
+  "chainId": 42161,
+  "name": "Arbitrum",
+  "symbol": "ETH",
+  "rpcUrl": "${ARBITRUM_RPC_URL}",
+  "explorerUrl": "https://arbiscan.io",
+  "blockTime": 1,
+  "finalityTime": 1200,
+  "isL2": true,
+  "gasPrice": {
+    "base": 100000000,
+    "max": 10000000000,
+    "updateInterval": 300
+  },
+  "contracts": {
+    "ethUsdPriceFeed": "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612",
+    "spokePool": "0xe35e9842fceaCA96570B734083f4a58e8F7C5f2A"
+  },
+  "tokens": {
+    "WETH": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+    "USDC": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+    "USDT": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+    "DAI": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1"
+  },
+  "bridgeConfig": {
+    "enabled": true,
+    "maxBridgeAmount": "1000000000000000000000",
+    "minBridgeAmount": "1000000000000000000",
+    "bridgeFee": "500000000000000000"
+  }
+}

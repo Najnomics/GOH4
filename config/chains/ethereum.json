@@ -1,0 +1,31 @@
+{
+  "chainId": 1,
+  "name": "Ethereum",
+  "symbol": "ETH",
+  "rpcUrl": "${ETHEREUM_RPC_URL}",
+  "explorerUrl": "https://etherscan.io",
+  "blockTime": 12,
+  "finalityTime": 780,
+  "isL2": false,
+  "gasPrice": {
+    "base": 20000000000,
+    "max": 1000000000000,
+    "updateInterval": 300
+  },
+  "contracts": {
+    "ethUsdPriceFeed": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
+    "spokePool": "0x5c7BCd6E7De5423a257D81B442095A1a6ced35C5"
+  },
+  "tokens": {
+    "WETH": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    "USDC": "0xA0b86a33E6c4b4C2Cc6c1c4CdbBD0d8C7B4e5d2A",
+    "USDT": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    "DAI": "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+  },
+  "bridgeConfig": {
+    "enabled": true,
+    "maxBridgeAmount": "1000000000000000000000",
+    "minBridgeAmount": "1000000000000000000",
+    "bridgeFee": "2000000000000000000"
+  }
+}
