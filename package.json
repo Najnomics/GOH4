@@ -1,0 +1,30 @@
+{
+  "name": "crosschain-gas-optimization-hook",
+  "version": "1.0.0",
+  "description": "Sophisticated Uniswap V4 hook for cross-chain gas optimization",
+  "main": "index.js",
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test",
+    "test:coverage": "forge coverage",
+    "test:gas": "forge test --gas-report",
+    "deploy:testnet": "forge script script/deployment/Deploy.s.sol --rpc-url $SEPOLIA_RPC_URL --broadcast --verify",
+    "deploy:mainnet": "forge script script/deployment/Deploy.s.sol --rpc-url $ETHEREUM_RPC_URL --broadcast --verify"
+  },
+  "keywords": [
+    "uniswap",
+    "v4",
+    "hook",
+    "cross-chain",
+    "gas-optimization",
+    "defi",
+    "across-protocol",
+    "foundry",
+    "solidity"
+  ],
+  "author": "Gas Optimization Hook Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}
