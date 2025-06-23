@@ -2,7 +2,7 @@
 pragma solidity ^0.8.26;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import {IGasPriceOracle} from "../interfaces/IGasPriceOracle.sol";
 import {Constants} from "../utils/Constants.sol";
 import {Errors} from "../utils/Errors.sol";
