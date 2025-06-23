@@ -150,13 +150,13 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
 
     /// @inheritdoc IGasOptimizationHook
     function pauseHook(bool pause) external override onlyOwner {
-        isHookPaused = pause;
+        super.pauseHook(pause);
         emit Events.EmergencyPauseToggled(pause, msg.sender);
     }
 
     /// @inheritdoc IGasOptimizationHook
     function isHookPaused() external view override returns (bool) {
-        return isHookPaused;
+        return super.isPaused();
     }
 
     /// @inheritdoc IGasOptimizationHook
