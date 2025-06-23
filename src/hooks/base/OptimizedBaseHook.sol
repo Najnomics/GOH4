@@ -1,20 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import {BaseHook} from "@uniswap/v4-core/src/BaseHook.sol";
 import {IPoolManager} from "@uniswap/v4-core/src/interfaces/IPoolManager.sol";
 import {Hooks} from "@uniswap/v4-core/src/libraries/Hooks.sol";
 import {PoolKey} from "@uniswap/v4-core/src/types/PoolKey.sol";
 import {BalanceDelta} from "@uniswap/v4-core/src/types/BalanceDelta.sol";
-import {BeforeSwapDelta} from "@uniswap/v4-core/src/types/BeforeSwapDelta.sol";
+import {BeforeSwapDelta, BeforeSwapDeltaLibrary} from "@uniswap/v4-core/src/types/BeforeSwapDelta.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Errors} from "../../utils/Errors.sol";
 
 /// @title Optimized Base Hook with enhanced functionality
-abstract contract OptimizedBaseHook is BaseHook, Ownable, ReentrancyGuard {
+abstract contract OptimizedBaseHook is Ownable, ReentrancyGuard {
     
+    IPoolManager public poolManager;
     bool public isHookPaused;
+    
+    modifier onlyPoolManager() {
+        require(msg.sender == address(poolManager), "Only pool manager");
+        _;
+    }
     
     modifier whenNotPaused() {
         if (isHookPaused) {
@@ -33,10 +38,12 @@ abstract contract OptimizedBaseHook is BaseHook, Ownable, ReentrancyGuard {
     constructor(
         IPoolManager _poolManager,
         address initialOwner
-    ) BaseHook(_poolManager) Ownable(initialOwner) {}
+    ) Ownable(initialOwner) {
+        poolManager = _poolManager;
+    }
 
     /// @notice Get the hook permissions required
-    function getHookPermissions() public pure virtual override returns (Hooks.Permissions memory) {
+    function getHookPermissions() public pure virtual returns (Hooks.Permissions memory) {
         return Hooks.Permissions({
             beforeInitialize: false,
             afterInitialize: false,
