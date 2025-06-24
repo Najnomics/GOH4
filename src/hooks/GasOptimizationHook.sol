@@ -5,6 +5,8 @@ import {IPoolManager} from "@uniswap/v4-core/src/interfaces/IPoolManager.sol";
 import {PoolKey} from "@uniswap/v4-core/src/types/PoolKey.sol";
 import {BalanceDelta} from "@uniswap/v4-core/src/types/BalanceDelta.sol";
 import {BeforeSwapDelta, BeforeSwapDeltaLibrary} from "@uniswap/v4-core/src/types/BeforeSwapDelta.sol";
+import {SwapParams} from "@uniswap/v4-core/src/types/PoolOperation.sol";
+import {BaseHook} from "@uniswap/v4-periphery/src/utils/BaseHook.sol";
 import {OptimizedBaseHook} from "./base/OptimizedBaseHook.sol";
 import {IGasOptimizationHook} from "../interfaces/IGasOptimizationHook.sol";
 import {ICostCalculator} from "../interfaces/ICostCalculator.sol";
@@ -45,13 +47,13 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
         crossChainManager = ICrossChainManager(_crossChainManager);
     }
 
-    /// @notice Hook called before a swap is executed
-    function beforeSwap(
+    /// @notice Internal hook called before a swap is executed
+    function _beforeSwap(
         address sender,
         PoolKey calldata key,
-        IPoolManager.SwapParams calldata params,
+        SwapParams calldata params,
         bytes calldata hookData
-    ) external onlyPoolManager whenNotPaused validPoolKey(key) nonReentrant returns (bytes4, BeforeSwapDelta, uint24) {
+    ) internal override whenNotPaused validPoolKey(key) nonReentrant returns (bytes4, BeforeSwapDelta, uint24) {
         _validateSwapParams(params);
         
         SwapContext memory context = SwapContext({
@@ -82,7 +84,7 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
             );
             
             // Return early to prevent local swap execution
-            return (this.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
+            return (BaseHook.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
         } else {
             emit Events.SwapExecutedLocally(
                 sender,
@@ -94,12 +96,12 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
         }
         
         // Continue with normal swap execution
-        return (this.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
+        return (BaseHook.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
     }
 
     /// @inheritdoc IGasOptimizationHook
     function getOptimizationQuote(
-        IPoolManager.SwapParams calldata params,
+        SwapParams calldata params,
         PoolKey calldata key
     ) external view override returns (OptimizationQuote memory) {
         SwapContext memory context = SwapContext({

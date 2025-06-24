@@ -3,6 +3,7 @@ pragma solidity ^0.8.26;
 
 import {IPoolManager} from "@uniswap/v4-core/src/interfaces/IPoolManager.sol";
 import {PoolKey} from "@uniswap/v4-core/src/types/PoolKey.sol";
+import {SwapParams} from "@uniswap/v4-core/src/types/PoolOperation.sol";
 
 /// @title Interface for Gas Optimization Hook
 interface IGasOptimizationHook {
@@ -28,14 +29,14 @@ interface IGasOptimizationHook {
     struct SwapContext {
         address user;
         PoolKey poolKey;
-        IPoolManager.SwapParams swapParams;
+        SwapParams swapParams;
         uint256 currentChainId;
         bytes hookData;
     }
 
     // Main hook functions
     function getOptimizationQuote(
-        IPoolManager.SwapParams calldata params,
+        SwapParams calldata params,
         PoolKey calldata key
     ) external view returns (OptimizationQuote memory);
 

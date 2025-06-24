@@ -1,26 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
+import {BaseHook} from "@uniswap/v4-periphery/src/utils/BaseHook.sol";
 import {IPoolManager} from "@uniswap/v4-core/src/interfaces/IPoolManager.sol";
 import {Hooks} from "@uniswap/v4-core/src/libraries/Hooks.sol";
 import {PoolKey} from "@uniswap/v4-core/src/types/PoolKey.sol";
 import {BalanceDelta} from "@uniswap/v4-core/src/types/BalanceDelta.sol";
 import {BeforeSwapDelta, BeforeSwapDeltaLibrary} from "@uniswap/v4-core/src/types/BeforeSwapDelta.sol";
+import {SwapParams} from "@uniswap/v4-core/src/types/PoolOperation.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Errors} from "../../utils/Errors.sol";
 import {Currency, CurrencyLibrary} from "@uniswap/v4-core/src/types/Currency.sol";
 
 /// @title Optimized Base Hook with enhanced functionality
-abstract contract OptimizedBaseHook is Ownable, ReentrancyGuard {
+/// @notice Extends Uniswap V4 BaseHook with additional security and optimization features
+abstract contract OptimizedBaseHook is BaseHook, Ownable, ReentrancyGuard {
     
-    IPoolManager public poolManager;
     bool internal _hookPaused;
-    
-    modifier onlyPoolManager() {
-        require(msg.sender == address(poolManager), "Only pool manager");
-        _;
-    }
     
     modifier whenNotPaused() {
         if (_hookPaused) {
@@ -39,12 +36,12 @@ abstract contract OptimizedBaseHook is Ownable, ReentrancyGuard {
     constructor(
         IPoolManager _poolManager,
         address initialOwner
-    ) Ownable(initialOwner) {
-        poolManager = _poolManager;
+    ) BaseHook(_poolManager) Ownable(initialOwner) {
+        // BaseHook constructor already sets poolManager via ImmutableState
     }
 
     /// @notice Get the hook permissions required
-    function getHookPermissions() public pure virtual returns (Hooks.Permissions memory) {
+    function getHookPermissions() public pure virtual override returns (Hooks.Permissions memory) {
         return Hooks.Permissions({
             beforeInitialize: false,
             afterInitialize: false,
@@ -93,7 +90,7 @@ abstract contract OptimizedBaseHook is Ownable, ReentrancyGuard {
     }
 
     /// @notice Validate swap parameters
-    function _validateSwapParams(IPoolManager.SwapParams memory params) internal pure {
+    function _validateSwapParams(SwapParams memory params) internal pure {
         if (params.amountSpecified == 0) {
             revert Errors.ZeroAmount();
         }

@@ -40,7 +40,7 @@ contract CostCalculator is ICostCalculator, Ownable {
     }
 
     /// @inheritdoc ICostCalculator
-    function calculateTotalCost(CostParams calldata params) external override returns (TotalCost memory) {
+    function calculateTotalCost(CostParams calldata params) external view override returns (TotalCost memory) {
         params.chainId.validateChainId();
         
         uint256 gasCostUSD = calculateGasCostUSD(params.chainId, params.gasLimit);
@@ -59,15 +59,6 @@ contract CostCalculator is ICostCalculator, Ownable {
         slippageCostUSD = estimateSlippageCost(params.tokenIn, params.tokenOut, params.amountIn, params.chainId);
         
         uint256 totalCostUSD = gasCostUSD + bridgeFeeUSD + slippageCostUSD;
-        
-        emit Events.CostCalculated(
-            params.chainId,
-            params.tokenIn,
-            params.amountIn,
-            totalCostUSD,
-            gasCostUSD,
-            bridgeFeeUSD
-        );
         
         return TotalCost({
             gasCostUSD: gasCostUSD,
