@@ -53,7 +53,7 @@ contract MainnetForkTest is Test {
     }
 
     function testCostCalculationWithRealPrices() public {
-        if (vm.envOr("ETHEREUM_RPC_URL", string("")).length == 0) {
+        if (bytes(vm.envOr("ETHEREUM_RPC_URL", string(""))).length == 0) {
             vm.skip(true);
         }
         

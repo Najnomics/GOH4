@@ -95,9 +95,9 @@ contract GasCalculationsTest is Test {
     }
 
     function testValidateGasPrice() public {
-        assertTrue((20e9).validateGasPrice()); // 20 gwei - valid
-        assertFalse((0).validateGasPrice()); // 0 - invalid
-        assertFalse((2000e9).validateGasPrice()); // Too high - invalid
+        assertTrue(GasCalculations.validateGasPrice(20e9)); // 20 gwei - valid
+        assertFalse(GasCalculations.validateGasPrice(0)); // 0 - invalid
+        assertFalse(GasCalculations.validateGasPrice(2000e9)); // Too high - invalid
     }
 
     function testCalculateGasCostWei() public {

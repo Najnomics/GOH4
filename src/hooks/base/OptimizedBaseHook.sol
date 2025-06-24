@@ -9,12 +9,13 @@ import {BeforeSwapDelta, BeforeSwapDeltaLibrary} from "@uniswap/v4-core/src/type
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Errors} from "../../utils/Errors.sol";
+import {Currency, CurrencyLibrary} from "@uniswap/v4-core/src/types/Currency.sol";
 
 /// @title Optimized Base Hook with enhanced functionality
 abstract contract OptimizedBaseHook is Ownable, ReentrancyGuard {
     
     IPoolManager public poolManager;
-    bool public isHookPaused;
+    bool internal _hookPaused;
     
     modifier onlyPoolManager() {
         require(msg.sender == address(poolManager), "Only pool manager");
@@ -22,14 +23,14 @@ abstract contract OptimizedBaseHook is Ownable, ReentrancyGuard {
     }
     
     modifier whenNotPaused() {
-        if (isHookPaused) {
+        if (_hookPaused) {
             revert Errors.EmergencyPauseActive();
         }
         _;
     }
     
     modifier validPoolKey(PoolKey memory key) {
-        if (address(key.currency0) == address(0) || address(key.currency1) == address(0)) {
+        if (Currency.unwrap(key.currency0) == address(0) || Currency.unwrap(key.currency1) == address(0)) {
             revert Errors.InvalidPoolKey();
         }
         _;
@@ -63,13 +64,13 @@ abstract contract OptimizedBaseHook is Ownable, ReentrancyGuard {
     }
 
     /// @notice Pause/unpause the hook
-    function pauseHook(bool pause) external onlyOwner {
-        isHookPaused = pause;
+    function pauseHook(bool pause) external virtual onlyOwner {
+        _hookPaused = pause;
     }
 
     /// @notice Check if hook is paused
     function isPaused() external view returns (bool) {
-        return isHookPaused;
+        return _hookPaused;
     }
 
     /// @notice Emergency function to recover stuck tokens

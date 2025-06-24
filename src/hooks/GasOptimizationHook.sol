@@ -13,6 +13,7 @@ import {Constants} from "../utils/Constants.sol";
 import {Errors} from "../utils/Errors.sol";
 import {Events} from "../utils/Events.sol";
 import {GasCalculations} from "../libraries/GasCalculations.sol";
+import {Currency, CurrencyLibrary} from "@uniswap/v4-core/src/types/Currency.sol";
 
 /// @title Gas Optimization Hook for Uniswap V4
 contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
@@ -44,13 +45,13 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
         crossChainManager = ICrossChainManager(_crossChainManager);
     }
 
-    /// @inheritdoc IGasOptimizationHook
+    /// @notice Hook called before a swap is executed
     function beforeSwap(
         address sender,
         PoolKey calldata key,
         IPoolManager.SwapParams calldata params,
         bytes calldata hookData
-    ) external override onlyPoolManager whenNotPaused validPoolKey(key) nonReentrant returns (bytes4, BeforeSwapDelta, uint24) {
+    ) external onlyPoolManager whenNotPaused validPoolKey(key) nonReentrant returns (bytes4, BeforeSwapDelta, uint24) {
         _validateSwapParams(params);
         
         SwapContext memory context = SwapContext({
@@ -72,8 +73,8 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
             
             emit Events.SwapOptimized(
                 sender,
-                address(key.currency0),
-                address(key.currency1),
+                Currency.unwrap(key.currency0),
+                Currency.unwrap(key.currency1),
                 uint256(params.amountSpecified > 0 ? params.amountSpecified : -params.amountSpecified),
                 quote.originalChainId,
                 quote.optimizedChainId,
@@ -85,8 +86,8 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
         } else {
             emit Events.SwapExecutedLocally(
                 sender,
-                address(key.currency0),
-                address(key.currency1),
+                Currency.unwrap(key.currency0),
+                Currency.unwrap(key.currency1),
                 uint256(params.amountSpecified > 0 ? params.amountSpecified : -params.amountSpecified),
                 "Savings below threshold"
             );
@@ -149,15 +150,16 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
     }
 
     /// @inheritdoc IGasOptimizationHook
-    function pauseHook(bool pause) external override onlyOwner {
-        super.pauseHook(pause);
+    function pauseHook(bool pause) external override(IGasOptimizationHook, OptimizedBaseHook) onlyOwner {
+        _hookPaused = pause;
         emit Events.EmergencyPauseToggled(pause, msg.sender);
     }
 
     /// @inheritdoc IGasOptimizationHook
     function isHookPaused() external view override returns (bool) {
-        return super.isPaused();
+        return _hookPaused;
     }
+
 
     /// @inheritdoc IGasOptimizationHook
     function getUserSavings(address user) external view override returns (uint256) {
@@ -199,8 +201,8 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
         
         // Find optimal chain
         ICostCalculator.OptimizationParams memory optimizationParams = ICostCalculator.OptimizationParams({
-            tokenIn: address(context.poolKey.currency0),
-            tokenOut: address(context.poolKey.currency1),
+            tokenIn: Currency.unwrap(context.poolKey.currency0),
+            tokenOut: Currency.unwrap(context.poolKey.currency1),
             amountIn: uint256(context.swapParams.amountSpecified > 0 ? context.swapParams.amountSpecified : -context.swapParams.amountSpecified),
             minSavingsThresholdBPS: userPrefs.minSavingsThresholdBPS,
             minAbsoluteSavingsUSD: userPrefs.minAbsoluteSavingsUSD,
@@ -227,8 +229,8 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
         ICostCalculator.TotalCost memory originalCost = costCalculator.calculateTotalCost(
             ICostCalculator.CostParams({
                 chainId: context.currentChainId,
-                tokenIn: address(context.poolKey.currency0),
-                tokenOut: address(context.poolKey.currency1),
+                tokenIn: Currency.unwrap(context.poolKey.currency0),
+                tokenOut: Currency.unwrap(context.poolKey.currency1),
                 amountIn: optimizationParams.amountIn,
                 gasLimit: GasCalculations.estimateSwapGas(),
                 user: context.user
@@ -238,8 +240,8 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
         ICostCalculator.TotalCost memory optimizedCost = costCalculator.calculateTotalCost(
             ICostCalculator.CostParams({
                 chainId: optimalChainId,
-                tokenIn: address(context.poolKey.currency0),
-                tokenOut: address(context.poolKey.currency1),
+                tokenIn: Currency.unwrap(context.poolKey.currency0),
+                tokenOut: Currency.unwrap(context.poolKey.currency1),
                 amountIn: optimizationParams.amountIn,
                 gasLimit: GasCalculations.calculateCrossChainGasUsage(true),
                 user: context.user
@@ -263,8 +265,8 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
     function _initiateCrossChainSwap(SwapContext memory context, OptimizationQuote memory quote) private {
         ICrossChainManager.CrossChainSwapParams memory crossChainParams = ICrossChainManager.CrossChainSwapParams({
             user: context.user,
-            tokenIn: address(context.poolKey.currency0),
-            tokenOut: address(context.poolKey.currency1),
+            tokenIn: Currency.unwrap(context.poolKey.currency0),
+            tokenOut: Currency.unwrap(context.poolKey.currency1),
             amountIn: uint256(context.swapParams.amountSpecified > 0 ? context.swapParams.amountSpecified : -context.swapParams.amountSpecified),
             minAmountOut: 0, // Will be calculated by CrossChainManager
             sourceChainId: context.currentChainId,

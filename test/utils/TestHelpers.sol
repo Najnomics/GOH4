@@ -6,7 +6,7 @@ import {MockChainlinkOracle} from "../mocks/MockChainlinkOracle.sol";
 import {Constants} from "../../src/utils/Constants.sol";
 
 /// @title Test Helpers for common testing utilities
-library TestHelpers {
+contract TestHelpers is Test {
     
     /// @notice Create a mock Chainlink oracle with specified price
     function createMockOracle(int256 price, uint8 decimals, string memory description) 

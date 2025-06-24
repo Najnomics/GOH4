@@ -3,6 +3,7 @@ pragma solidity ^0.8.26;
 
 import {Test, console} from "forge-std/Test.sol";
 import {CostCalculator} from "../../src/core/CostCalculator.sol";
+import {ICostCalculator} from "../../src/interfaces/ICostCalculator.sol";
 import {GasPriceOracle} from "../../src/core/GasPriceOracle.sol";
 import {Constants} from "../../src/utils/Constants.sol";
 import {Errors} from "../../src/utils/Errors.sol";
@@ -32,7 +33,7 @@ contract CostCalculatorTest is Test {
     }
 
     function testCalculateTotalCost() public {
-        CostCalculator.CostParams memory params = CostCalculator.CostParams({
+        ICostCalculator.CostParams memory params = ICostCalculator.CostParams({
             chainId: Constants.ETHEREUM_CHAIN_ID,
             tokenIn: address(0x1),
             tokenOut: address(0x2),
@@ -41,7 +42,7 @@ contract CostCalculatorTest is Test {
             user: user
         });
         
-        CostCalculator.TotalCost memory cost = calculator.calculateTotalCost(params);
+        ICostCalculator.TotalCost memory cost = calculator.calculateTotalCost(params);
         
         assertGt(cost.gasCostUSD, 0);
         assertEq(cost.bridgeFeeUSD, 0); // No bridge fee for same chain
@@ -49,7 +50,7 @@ contract CostCalculatorTest is Test {
     }
 
     function testFindOptimalChain() public {
-        CostCalculator.OptimizationParams memory params = CostCalculator.OptimizationParams({
+        ICostCalculator.OptimizationParams memory params = ICostCalculator.OptimizationParams({
             tokenIn: address(0x1),
             tokenOut: address(0x2),
             amountIn: 1e18,
@@ -86,7 +87,7 @@ contract CostCalculatorTest is Test {
     }
 
     function testUpdateCostParameters() public {
-        CostCalculator.CostParameters memory newParams = CostCalculator.CostParameters({
+        ICostCalculator.CostParameters memory newParams = ICostCalculator.CostParameters({
             baseBridgeFeeUSD: 5e18, // $5
             bridgeFeePercentageBPS: 20, // 0.2%
             maxSlippageBPS: 100, // 1%
@@ -97,13 +98,19 @@ contract CostCalculatorTest is Test {
         vm.prank(owner);
         calculator.updateCostParameters(newParams);
         
-        CostCalculator.CostParameters memory updatedParams = calculator.costParameters();
-        assertEq(updatedParams.baseBridgeFeeUSD, 5e18);
-        assertEq(updatedParams.bridgeFeePercentageBPS, 20);
+        (
+            uint256 baseBridgeFeeUSD,
+            uint256 bridgeFeePercentageBPS,
+            uint256 maxSlippageBPS,
+            uint256 mevProtectionFeeBPS,
+            uint256 gasEstimationMultiplier
+        ) = calculator.costParameters();
+        assertEq(baseBridgeFeeUSD, 5e18);
+        assertEq(bridgeFeePercentageBPS, 20);
     }
 
     function testOnlyOwnerCanUpdateParameters() public {
-        CostCalculator.CostParameters memory newParams = CostCalculator.CostParameters({
+        ICostCalculator.CostParameters memory newParams = ICostCalculator.CostParameters({
             baseBridgeFeeUSD: 5e18,
             bridgeFeePercentageBPS: 20,
             maxSlippageBPS: 100,

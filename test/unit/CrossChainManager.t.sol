@@ -3,6 +3,7 @@ pragma solidity ^0.8.26;
 
 import {Test, console} from "forge-std/Test.sol";
 import {CrossChainManager} from "../../src/core/CrossChainManager.sol";
+import {ICrossChainManager} from "../../src/interfaces/ICrossChainManager.sol";
 import {MockSpokePool} from "../mocks/MockSpokePool.sol";
 import {Constants} from "../../src/utils/Constants.sol";
 import {Errors} from "../../src/utils/Errors.sol";
@@ -22,7 +23,7 @@ contract CrossChainManagerTest is Test {
     }
 
     function testInitiateCrossChainSwap() public {
-        CrossChainManager.CrossChainSwapParams memory params = CrossChainManager.CrossChainSwapParams({
+        ICrossChainManager.CrossChainSwapParams memory params = ICrossChainManager.CrossChainSwapParams({
             user: user,
             tokenIn: tokenA,
             tokenOut: tokenB,
@@ -41,13 +42,13 @@ contract CrossChainManagerTest is Test {
         assertEq(swapState.tokenIn, tokenA);
         assertEq(swapState.tokenOut, tokenB);
         assertEq(swapState.amountIn, 1e18);
-        assertEq(uint8(swapState.status), uint8(CrossChainManager.SwapStatus.Initiated));
+        assertEq(uint8(swapState.status), uint8(ICrossChainManager.SwapStatus.Initiated));
         assertTrue(crossChainManager.isSwapActive(swapId));
     }
 
     function testCompleteSwapFlow() public {
         // Initiate swap
-        CrossChainManager.CrossChainSwapParams memory params = CrossChainManager.CrossChainSwapParams({
+        ICrossChainManager.CrossChainSwapParams memory params = ICrossChainManager.CrossChainSwapParams({
             user: user,
             tokenIn: tokenA,
             tokenOut: tokenB,
@@ -65,13 +66,13 @@ contract CrossChainManagerTest is Test {
         crossChainManager.handleDestinationSwap(swapId, "");
         
         CrossChainManager.SwapState memory swapState = crossChainManager.getSwapState(swapId);
-        assertEq(uint8(swapState.status), uint8(CrossChainManager.SwapStatus.BridgingBack));
+        assertEq(uint8(swapState.status), uint8(ICrossChainManager.SwapStatus.BridgingBack));
         
         // Complete swap
         crossChainManager.completeCrossChainSwap(swapId);
         
         swapState = crossChainManager.getSwapState(swapId);
-        assertEq(uint8(swapState.status), uint8(CrossChainManager.SwapStatus.Completed));
+        assertEq(uint8(swapState.status), uint8(ICrossChainManager.SwapStatus.Completed));
         assertFalse(crossChainManager.isSwapActive(swapId));
         assertGt(swapState.completedAt, 0);
         assertGt(swapState.amountOut, 0);
@@ -79,7 +80,7 @@ contract CrossChainManagerTest is Test {
 
     function testInvalidParameters() public {
         // Zero address user
-        CrossChainManager.CrossChainSwapParams memory params = CrossChainManager.CrossChainSwapParams({
+        ICrossChainManager.CrossChainSwapParams memory params = ICrossChainManager.CrossChainSwapParams({
             user: address(0),
             tokenIn: tokenA,
             tokenOut: tokenB,
@@ -111,7 +112,7 @@ contract CrossChainManagerTest is Test {
 
     function testEmergencyRecovery() public {
         // Initiate swap
-        CrossChainManager.CrossChainSwapParams memory params = CrossChainManager.CrossChainSwapParams({
+        ICrossChainManager.CrossChainSwapParams memory params = ICrossChainManager.CrossChainSwapParams({
             user: user,
             tokenIn: tokenA,
             tokenOut: tokenB,
@@ -138,13 +139,13 @@ contract CrossChainManagerTest is Test {
         crossChainManager.emergencyRecovery(swapId);
         
         CrossChainManager.SwapState memory swapState = crossChainManager.getSwapState(swapId);
-        assertEq(uint8(swapState.status), uint8(CrossChainManager.SwapStatus.Recovered));
+        assertEq(uint8(swapState.status), uint8(ICrossChainManager.SwapStatus.Recovered));
         assertFalse(crossChainManager.isSwapActive(swapId));
     }
 
     function testOwnerEmergencyRecovery() public {
         // Initiate swap
-        CrossChainManager.CrossChainSwapParams memory params = CrossChainManager.CrossChainSwapParams({
+        ICrossChainManager.CrossChainSwapParams memory params = ICrossChainManager.CrossChainSwapParams({
             user: user,
             tokenIn: tokenA,
             tokenOut: tokenB,
@@ -166,12 +167,12 @@ contract CrossChainManagerTest is Test {
         crossChainManager.emergencyRecovery(swapId);
         
         CrossChainManager.SwapState memory swapState = crossChainManager.getSwapState(swapId);
-        assertEq(uint8(swapState.status), uint8(CrossChainManager.SwapStatus.Recovered));
+        assertEq(uint8(swapState.status), uint8(ICrossChainManager.SwapStatus.Recovered));
     }
 
     function testUnauthorizedRecovery() public {
         // Initiate swap
-        CrossChainManager.CrossChainSwapParams memory params = CrossChainManager.CrossChainSwapParams({
+        ICrossChainManager.CrossChainSwapParams memory params = ICrossChainManager.CrossChainSwapParams({
             user: user,
             tokenIn: tokenA,
             tokenOut: tokenB,
@@ -200,7 +201,7 @@ contract CrossChainManagerTest is Test {
         vm.prank(owner);
         crossChainManager.pauseCrossChainOperations(true);
         
-        CrossChainManager.CrossChainSwapParams memory params = CrossChainManager.CrossChainSwapParams({
+        ICrossChainManager.CrossChainSwapParams memory params = ICrossChainManager.CrossChainSwapParams({
             user: user,
             tokenIn: tokenA,
             tokenOut: tokenB,
@@ -229,7 +230,7 @@ contract CrossChainManagerTest is Test {
         vm.prank(owner);
         crossChainManager.updateChainConfiguration(Constants.ARBITRUM_CHAIN_ID, false, 0);
         
-        CrossChainManager.CrossChainSwapParams memory params = CrossChainManager.CrossChainSwapParams({
+        ICrossChainManager.CrossChainSwapParams memory params = ICrossChainManager.CrossChainSwapParams({
             user: user,
             tokenIn: tokenA,
             tokenOut: tokenB,
@@ -263,7 +264,7 @@ contract CrossChainManagerTest is Test {
         assertEq(avgTime, 0);
         
         // Complete a successful swap
-        CrossChainManager.CrossChainSwapParams memory params = CrossChainManager.CrossChainSwapParams({
+        ICrossChainManager.CrossChainSwapParams memory params = ICrossChainManager.CrossChainSwapParams({
             user: user,
             tokenIn: tokenA,
             tokenOut: tokenB,
@@ -294,7 +295,7 @@ contract CrossChainManagerTest is Test {
         address user2 = address(0x6);
         
         // Create swap for user1
-        CrossChainManager.CrossChainSwapParams memory params1 = CrossChainManager.CrossChainSwapParams({
+        ICrossChainManager.CrossChainSwapParams memory params1 = ICrossChainManager.CrossChainSwapParams({
             user: user,
             tokenIn: tokenA,
             tokenOut: tokenB,
@@ -307,7 +308,7 @@ contract CrossChainManagerTest is Test {
         });
         
         // Create swap for user2
-        CrossChainManager.CrossChainSwapParams memory params2 = CrossChainManager.CrossChainSwapParams({
+        ICrossChainManager.CrossChainSwapParams memory params2 = ICrossChainManager.CrossChainSwapParams({
             user: user2,
             tokenIn: tokenA,
             tokenOut: tokenB,

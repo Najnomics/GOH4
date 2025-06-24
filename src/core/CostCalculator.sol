@@ -40,7 +40,7 @@ contract CostCalculator is ICostCalculator, Ownable {
     }
 
     /// @inheritdoc ICostCalculator
-    function calculateTotalCost(CostParams calldata params) external view override returns (TotalCost memory) {
+    function calculateTotalCost(CostParams calldata params) external override returns (TotalCost memory) {
         params.chainId.validateChainId();
         
         uint256 gasCostUSD = calculateGasCostUSD(params.chainId, params.gasLimit);
@@ -225,7 +225,7 @@ contract CostCalculator is ICostCalculator, Ownable {
         // WETH - ETH/USD
         tokenPriceFeeds[0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2] = AggregatorV3Interface(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
         // USDC - USDC/USD  
-        tokenPriceFeeds[0xA0b86a33E6C4b4C2Cc6c1c4CdbBD0d8C7B4e5d2A] = AggregatorV3Interface(0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6);
+        tokenPriceFeeds[0xa0b86A33E6C4B4C2Cc6c1c4CdbBD0d8C7B4e5d2A] = AggregatorV3Interface(0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6);
         // USDT - USDT/USD
         tokenPriceFeeds[0xdAC17F958D2ee523a2206206994597C13D831ec7] = AggregatorV3Interface(0x3E7d1eAB13ad0104d2750B8863b489D65364e32D);
     }
