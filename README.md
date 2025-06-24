@@ -2,7 +2,7 @@
 
 A sophisticated Uniswap V4 hook that automatically routes swaps to the most cost-effective blockchain using Across Protocol, maximizing user savings through intelligent gas price optimization and cross-chain execution.
 
-## 🎯 Project Status
+## 🎯 Project Status--
 
 ✅ **CORE COMPONENTS IMPLEMENTED:**
 - Gas Price Oracle with multi-chain support
