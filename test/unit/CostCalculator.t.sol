@@ -17,7 +17,7 @@ contract CostCalculatorTest is Test {
 
     function setUp() public {
         oracle = new GasPriceOracle(owner, keeper);
-        calculator = new CostCalculator(owner, address(oracle));
+        calculator = new CostCalculator(owner, address(oracle), address(0)); // No chainlink for this test
         
         // Setup initial gas prices
         vm.prank(keeper);
