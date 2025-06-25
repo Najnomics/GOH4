@@ -5,7 +5,6 @@ import {IPoolManager} from "@uniswap/v4-core/src/interfaces/IPoolManager.sol";
 import {PoolKey} from "@uniswap/v4-core/src/types/PoolKey.sol";
 import {BalanceDelta} from "@uniswap/v4-core/src/types/BalanceDelta.sol";
 import {BeforeSwapDelta, BeforeSwapDeltaLibrary} from "@uniswap/v4-core/src/types/BeforeSwapDelta.sol";
-import {SwapParams} from "@uniswap/v4-core/src/types/PoolOperation.sol";
 import {BaseHook} from "@uniswap/v4-periphery/src/utils/BaseHook.sol";
 import {OptimizedBaseHook} from "./base/OptimizedBaseHook.sol";
 import {IGasOptimizationHook} from "../interfaces/IGasOptimizationHook.sol";
