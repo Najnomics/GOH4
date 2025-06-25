@@ -26,6 +26,9 @@ contract UniswapV4Integration is ImmutableState, Ownable {
     using StateLibrary for IPoolManager;
     using SafeERC20 for IERC20;
 
+    event PoolStateUpdated(PoolId indexed poolId, uint160 sqrtPriceX96, int24 tick);
+    event SwapExecuted(PoolId indexed poolId, address indexed user, uint256 amountIn, uint256 amountOut);
+
     // V4 Periphery contracts
     PositionManager public immutable positionManager;
     IV4Router public immutable router;
