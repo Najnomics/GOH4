@@ -27,7 +27,7 @@ contract MainnetForkTest is Test {
         }
         
         gasPriceOracle = new GasPriceOracle(owner, keeper);
-        costCalculator = new CostCalculator(owner, address(gasPriceOracle));
+        costCalculator = new CostCalculator(owner, address(gasPriceOracle), address(0)); // No chainlink for this test
     }
 
     function testRealChainlinkPriceFeeds() public {
