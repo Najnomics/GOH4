@@ -28,14 +28,14 @@ interface IGasOptimizationHook {
     struct SwapContext {
         address user;
         PoolKey poolKey;
-        SwapParams swapParams;
+        IPoolManager.SwapParams swapParams;
         uint256 currentChainId;
         bytes hookData;
     }
 
     // Main hook functions
     function getOptimizationQuote(
-        SwapParams calldata params,
+        IPoolManager.SwapParams calldata params,
         PoolKey calldata key
     ) external view returns (OptimizationQuote memory);
 
