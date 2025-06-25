@@ -212,7 +212,7 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         Currency currency1,
         uint256 swapAmount
     ) external view returns (uint24 optimalFee, uint256 bestAmountOut) {
-        uint24[4] memory fees = [100, 500, 3000, 10000]; // 0.01%, 0.05%, 0.3%, 1%
+        uint24[4] memory fees = [uint24(100), uint24(500), uint24(3000), uint24(10000)]; // 0.01%, 0.05%, 0.3%, 1%
         bestAmountOut = 0;
         optimalFee = fees[0];
 
