@@ -302,15 +302,19 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         monitoredPools[poolId] = true;
         
         // Update initial pool info
-        PoolLiquidityInfo memory info = this.getPoolLiquidityInfo(key);
-        poolInfo[poolId] = info;
+        LiquidityInfo memory info = this.getPoolLiquidityInfo(key);
+        poolLiquidityInfo[poolId] = info;
+        
+        // Emit initial state
+        PoolState memory state = this.getPoolState(key);
+        emit PoolStateUpdated(poolId, state.sqrtPriceX96, state.tick);
     }
 
     /// @notice Remove a pool from monitoring
     function removePoolFromMonitoring(PoolKey memory key) external onlyOwner {
         PoolId poolId = key.toId();
         monitoredPools[poolId] = false;
-        delete poolInfo[poolId];
+        delete poolLiquidityInfo[poolId];
     }
 
     /// @notice Update slippage protection settings
@@ -329,7 +333,7 @@ contract UniswapV4Integration is ImmutableState, Ownable {
             if (!success) revert Errors.TransferFailed();
         } else {
             // ERC20 token
-            IERC20(Currency.unwrap(currency)).transfer(to, amount);
+            IERC20(Currency.unwrap(currency)).safeTransfer(to, amount);
         }
     }
 
