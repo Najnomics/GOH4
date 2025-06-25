@@ -55,13 +55,23 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
         chainlinkIntegration = IChainlinkAggregator(_chainlinkIntegration);
     }
 
+    /// @notice Hook function called before a swap is executed 
+    function beforeSwap(
+        address sender,
+        PoolKey calldata key,
+        IPoolManager.SwapParams calldata params,
+        bytes calldata hookData
+    ) external override whenNotPaused validPoolKey(key) nonReentrant returns (bytes4, BeforeSwapDelta, uint24) {
+        return _beforeSwap(sender, key, params, hookData);
+    }
+
     /// @notice Internal hook called before a swap is executed
     function _beforeSwap(
         address sender,
         PoolKey calldata key,
-        SwapParams calldata params,
+        IPoolManager.SwapParams calldata params,
         bytes calldata hookData
-    ) internal override whenNotPaused validPoolKey(key) nonReentrant returns (bytes4, BeforeSwapDelta, uint24) {
+    ) internal returns (bytes4, BeforeSwapDelta, uint24) {
         _validateSwapParams(params);
         
         SwapContext memory context = SwapContext({
