@@ -24,7 +24,7 @@ contract CrossChainFlowTest is Test {
     function setUp() public {
         mockSpokePool = new MockSpokePool();
         gasPriceOracle = new GasPriceOracle(owner, owner);
-        costCalculator = new CostCalculator(owner, address(gasPriceOracle));
+        costCalculator = new CostCalculator(owner, address(gasPriceOracle), address(0)); // No chainlink for this test
         crossChainManager = new CrossChainManager(owner, address(mockSpokePool));
         
         // Setup gas prices
