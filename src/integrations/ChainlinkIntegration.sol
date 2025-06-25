@@ -275,7 +275,7 @@ contract ChainlinkIntegration is IChainlinkAggregator, Ownable {
         ethPriceFeeds[Constants.ETHEREUM_CHAIN_ID] = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419; // ETH/USD
 
         // Add common token price feeds
-        priceFeeds[0xA0b86a33E6C4b4c2CC6C1C4CdBbD0D8C7b4e5d2A] = PriceFeedData({ // USDC
+        priceFeeds[0xa0b86a33E6C4b4c2CC6C1C4CdBbD0D8C7b4e5d2A] = PriceFeedData({ // USDC
             feedAddress: 0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6,
             heartbeat: DEFAULT_HEARTBEAT,
             decimals: 8,
