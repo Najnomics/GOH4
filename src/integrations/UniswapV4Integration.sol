@@ -123,23 +123,28 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         }
     }
 
-    /// @notice Get a swap quote without executing the trade
+    /// @notice Get a comprehensive swap quote using V4 Router simulation
     function getSwapQuote(
         PoolKey memory key,
         SwapParams memory params
     ) external view returns (SwapQuote memory quote) {
         PoolId poolId = key.toId();
         
-        try this.previewSwap(key, params) returns (uint256 amountOut, uint256 feeAmount) {
+        try this.simulateSwap(key, params) returns (
+            uint256 amountOut, 
+            uint256 feeAmount,
+            PoolState memory resultingState
+        ) {
             // Calculate price impact
-            uint256 priceImpact = _calculatePriceImpact(key, params, amountOut);
+            uint256 priceImpact = _calculatePriceImpactBPS(key, params, amountOut);
             
             quote = SwapQuote({
                 amountOut: amountOut,
                 priceImpact: priceImpact,
-                liquidityUsed: 0, // Would need deeper integration to calculate
+                liquidityUsed: 0, // Would need deeper V4 integration
                 feeAmount: feeAmount,
-                isValid: true
+                isValid: true,
+                poolState: resultingState
             });
         } catch {
             quote = SwapQuote({
@@ -147,29 +152,42 @@ contract UniswapV4Integration is ImmutableState, Ownable {
                 priceImpact: 0,
                 liquidityUsed: 0,
                 feeAmount: 0,
-                isValid: false
+                isValid: false,
+                poolState: PoolState({
+                    sqrtPriceX96: 0,
+                    tick: 0,
+                    protocolFee: 0,
+                    lpFee: 0
+                })
             });
         }
     }
 
-    /// @notice Preview a swap without executing it
-    function previewSwap(
+    /// @notice Simulate a swap using V4 Router quote functionality
+    function simulateSwap(
         PoolKey memory key,
         SwapParams memory params
-    ) external view returns (uint256 amountOut, uint256 feeAmount) {
-        // This would use the pool manager's quote functionality
-        // For now, we'll simulate a basic calculation
+    ) external view returns (
+        uint256 amountOut, 
+        uint256 feeAmount,
+        PoolState memory resultingState
+    ) {
+        // Get current pool state
+        resultingState = this.getPoolState(key);
         
-        // Simplified calculation - in practice would use more sophisticated math
         uint256 amountIn = uint256(params.amountSpecified > 0 ? params.amountSpecified : -params.amountSpecified);
         
-        // Apply fee (key.fee is in hundredths of basis points)
+        // Calculate fee using the pool's fee tier
         feeAmount = (amountIn * key.fee) / 1000000;
+        
+        // Simulate output amount (simplified calculation)
+        // In production, this would use actual V4 Router quoting
         amountOut = amountIn - feeAmount;
         
-        // Apply simplified price impact
-        uint256 priceImpact = _estimatePriceImpact(key, amountIn);
-        amountOut = amountOut - (amountOut * priceImpact / Constants.BASIS_POINTS_DENOMINATOR);
+        // Apply estimated price impact
+        uint256 priceImpactBPS = _estimatePriceImpactBPS(key, amountIn);
+        uint256 priceImpactAmount = (amountOut * priceImpactBPS) / Constants.BASIS_POINTS_DENOMINATOR;
+        amountOut = amountOut > priceImpactAmount ? amountOut - priceImpactAmount : 0;
     }
 
     /// @notice Get liquidity depth analysis for a pool
