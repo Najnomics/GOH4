@@ -36,6 +36,7 @@ library Errors {
     error ConfigurationLocked();
     error InvalidThreshold();
     error InvalidTimelock();
+    error InvalidSlippageBPS();
 
     // Token mapping errors
     error UnsupportedToken();
