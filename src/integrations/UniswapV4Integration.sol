@@ -223,7 +223,7 @@ contract UniswapV4Integration is ImmutableState, Ownable {
                 currency1: currency1,
                 fee: fees[i],
                 tickSpacing: _getTickSpacing(fees[i]),
-                hooks: address(0)
+                hooks: IHooks(address(0))
             });
 
             try this.previewSwap(key, SwapParams({
