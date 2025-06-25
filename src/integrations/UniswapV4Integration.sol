@@ -72,37 +72,54 @@ contract UniswapV4Integration is ImmutableState, Ownable {
 
     constructor(
         IPoolManager _poolManager,
+        address _positionManager,
+        address _router,
         address initialOwner
-    ) ImmutableState(_poolManager) Ownable(initialOwner) {}
+    ) ImmutableState(_poolManager) Ownable(initialOwner) {
+        positionManager = PositionManager(_positionManager);
+        router = IV4Router(_router);
+    }
 
-    /// @notice Get detailed liquidity information for a pool
-    function getPoolLiquidityInfo(PoolKey memory key) 
+    /// @notice Get detailed pool state using V4 core StateLibrary
+    function getPoolState(PoolKey memory key) 
         external 
         view 
-        returns (PoolLiquidityInfo memory info) 
+        returns (PoolState memory state) 
     {
         PoolId poolId = key.toId();
         
-        // Note: getSlot0 may not be available in current v4-core version
-        // Using simplified approach for now
-        // (uint160 sqrtPriceX96, int24 tick, uint24 protocolFee, ) = poolManager.getSlot0(poolId);
-        // Note: Direct liquidity access may not be available in current v4-core
-        // Using simplified approach for demonstration
-        uint128 liquidity = 1000000; // Placeholder value
+        (uint160 sqrtPriceX96, int24 tick, uint24 protocolFee, uint24 lpFee) = poolManager.getSlot0(poolId);
         
-        info = PoolLiquidityInfo({
+        state = PoolState({
+            sqrtPriceX96: sqrtPriceX96,
+            tick: tick,
+            protocolFee: protocolFee,
+            lpFee: lpFee
+        });
+    }
+
+    /// @notice Get comprehensive liquidity information using V4 core
+    function getPoolLiquidityInfo(PoolKey memory key) 
+        external 
+        view 
+        returns (LiquidityInfo memory info) 
+    {
+        PoolId poolId = key.toId();
+        
+        // Get liquidity and fee growth data from V4 core
+        uint128 liquidity = poolManager.getLiquidity(poolId);
+        
+        info = LiquidityInfo({
             liquidity: liquidity,
-            sqrtPriceX96: 0, // Would need actual implementation
-            tick: 0, // Would need actual implementation
-            feeGrowthGlobal0X128: 0,
-            feeGrowthGlobal1X128: 0,
-            protocolFee: 0
+            feeGrowthGlobal0X128: 0, // Would need specific V4 implementation
+            feeGrowthGlobal1X128: 0, // Would need specific V4 implementation
+            protocolFeesAccrued0: 0, // Would need specific V4 implementation
+            protocolFeesAccrued1: 0  // Would need specific V4 implementation
         });
 
         // Update stored info if this is a monitored pool
         if (monitoredPools[poolId]) {
-            // Note: This is a view function, so we can't actually update storage
-            // This would be updated via separate monitoring transactions
+            poolLiquidityInfo[poolId] = info;
         }
     }
 
