@@ -2,9 +2,9 @@
 pragma solidity ^0.8.26;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import {ICostCalculator} from "../interfaces/ICostCalculator.sol";
 import {IGasPriceOracle} from "../interfaces/IGasPriceOracle.sol";
+import {IChainlinkAggregator} from "../interfaces/external/IChainlinkAggregator.sol";
 import {Constants} from "../utils/Constants.sol";
 import {Errors} from "../utils/Errors.sol";
 import {Events} from "../utils/Events.sol";
@@ -17,15 +17,17 @@ contract CostCalculator is ICostCalculator, Ownable {
     using GasCalculations for uint256;
 
     IGasPriceOracle public gasPriceOracle;
+    IChainlinkAggregator public chainlinkIntegration;
     
-    mapping(address => AggregatorV3Interface) public tokenPriceFeeds;
     CostParameters public costParameters;
     
     constructor(
         address initialOwner,
-        address _gasPriceOracle
+        address _gasPriceOracle,
+        address _chainlinkIntegration
     ) Ownable(initialOwner) {
         gasPriceOracle = IGasPriceOracle(_gasPriceOracle);
+        chainlinkIntegration = IChainlinkAggregator(_chainlinkIntegration);
         
         // Initialize default cost parameters
         costParameters = CostParameters({
@@ -35,8 +37,6 @@ contract CostCalculator is ICostCalculator, Ownable {
             mevProtectionFeeBPS: 5, // 0.05%
             gasEstimationMultiplier: 120 // 1.2x safety margin
         });
-        
-        _initializeTokenPriceFeeds();
     }
 
     /// @inheritdoc ICostCalculator
@@ -171,30 +171,12 @@ contract CostCalculator is ICostCalculator, Ownable {
 
     /// @inheritdoc ICostCalculator
     function updateTokenPriceFeed(address token, address priceFeed) external override onlyOwner {
-        if (token == address(0) || priceFeed == address(0)) {
-            revert Errors.ZeroAddress();
-        }
-        tokenPriceFeeds[token] = AggregatorV3Interface(priceFeed);
+        chainlinkIntegration.addPriceFeed(token, priceFeed, 8 hours);
     }
 
     /// @inheritdoc ICostCalculator
     function convertToUSD(address token, uint256 amount) public view override returns (uint256) {
-        AggregatorV3Interface priceFeed = tokenPriceFeeds[token];
-        if (address(priceFeed) == address(0)) {
-            revert Errors.InvalidPriceFeed();
-        }
-        
-        (, int256 price, , uint256 updatedAt,) = priceFeed.latestRoundData();
-        
-        if (block.timestamp - updatedAt > Constants.GAS_PRICE_STALENESS_THRESHOLD) {
-            revert Errors.PriceFeedStale();
-        }
-        
-        // Convert price from Chainlink format (8 decimals) to 18 decimals
-        uint256 adjustedPrice = uint256(price) * 1e10;
-        
-        // Assume token has 18 decimals for simplicity
-        return (amount * adjustedPrice) / 1e18;
+        return chainlinkIntegration.convertToUSD(token, amount);
     }
 
     /// @inheritdoc ICostCalculator
@@ -211,13 +193,8 @@ contract CostCalculator is ICostCalculator, Ownable {
         return false;
     }
 
-    function _initializeTokenPriceFeeds() private {
-        // Initialize with mainnet Chainlink price feeds
-        // WETH - ETH/USD
-        tokenPriceFeeds[0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2] = AggregatorV3Interface(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
-        // USDC - USDC/USD  
-        tokenPriceFeeds[0xa0b86A33E6C4B4C2Cc6c1c4CdbBD0d8C7B4e5d2A] = AggregatorV3Interface(0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6);
-        // USDT - USDT/USD
-        tokenPriceFeeds[0xdAC17F958D2ee523a2206206994597C13D831ec7] = AggregatorV3Interface(0x3E7d1eAB13ad0104d2750B8863b489D65364e32D);
+    // Admin functions
+    function updateChainlinkIntegration(address newChainlinkIntegration) external onlyOwner {
+        chainlinkIntegration = IChainlinkAggregator(newChainlinkIntegration);
     }
 }

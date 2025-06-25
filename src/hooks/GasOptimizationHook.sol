@@ -11,6 +11,8 @@ import {OptimizedBaseHook} from "./base/OptimizedBaseHook.sol";
 import {IGasOptimizationHook} from "../interfaces/IGasOptimizationHook.sol";
 import {ICostCalculator} from "../interfaces/ICostCalculator.sol";
 import {ICrossChainManager} from "../interfaces/ICrossChainManager.sol";
+import {IAcrossProtocol} from "../interfaces/external/IAcrossProtocol.sol";
+import {IChainlinkAggregator} from "../interfaces/external/IChainlinkAggregator.sol";
 import {Constants} from "../utils/Constants.sol";
 import {Errors} from "../utils/Errors.sol";
 import {Events} from "../utils/Events.sol";
@@ -23,6 +25,8 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
 
     ICostCalculator public costCalculator;
     ICrossChainManager public crossChainManager;
+    IAcrossProtocol public acrossIntegration;
+    IChainlinkAggregator public chainlinkIntegration;
     
     // User preferences storage
     mapping(address => UserPreferences) private userPreferences;
@@ -41,10 +45,14 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
         IPoolManager _poolManager,
         address initialOwner,
         address _costCalculator,
-        address _crossChainManager
+        address _crossChainManager,
+        address _acrossIntegration,
+        address _chainlinkIntegration
     ) OptimizedBaseHook(_poolManager, initialOwner) {
         costCalculator = ICostCalculator(_costCalculator);
         crossChainManager = ICrossChainManager(_crossChainManager);
+        acrossIntegration = IAcrossProtocol(_acrossIntegration);
+        chainlinkIntegration = IChainlinkAggregator(_chainlinkIntegration);
     }
 
     /// @notice Internal hook called before a swap is executed

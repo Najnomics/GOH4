@@ -4,6 +4,7 @@ pragma solidity ^0.8.26;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ICrossChainManager} from "../interfaces/ICrossChainManager.sol";
+import {IAcrossProtocol} from "../interfaces/external/IAcrossProtocol.sol";
 import {Constants} from "../utils/Constants.sol";
 import {Errors} from "../utils/Errors.sol";
 import {Events} from "../utils/Events.sol";
@@ -18,7 +19,7 @@ contract CrossChainManager is ICrossChainManager, Ownable, ReentrancyGuard {
     mapping(address => bytes32[]) private userActiveSwaps;
     mapping(uint256 => bool) public supportedChains;
     
-    address public bridgeIntegration;
+    IAcrossProtocol public acrossIntegration;
     bool public isPaused;
     
     // Statistics
@@ -37,8 +38,8 @@ contract CrossChainManager is ICrossChainManager, Ownable, ReentrancyGuard {
         _;
     }
 
-    constructor(address initialOwner, address _bridgeIntegration) Ownable(initialOwner) {
-        bridgeIntegration = _bridgeIntegration;
+    constructor(address initialOwner, address _acrossIntegration) Ownable(initialOwner) {
+        acrossIntegration = IAcrossProtocol(_acrossIntegration);
         _initializeSupportedChains();
     }
 
@@ -190,7 +191,7 @@ contract CrossChainManager is ICrossChainManager, Ownable, ReentrancyGuard {
     /// @inheritdoc ICrossChainManager
     function updateBridgeIntegration(address newBridgeIntegration) external override onlyOwner {
         if (newBridgeIntegration == address(0)) revert Errors.ZeroAddress();
-        bridgeIntegration = newBridgeIntegration;
+        acrossIntegration = IAcrossProtocol(newBridgeIntegration);
     }
 
     /// @inheritdoc ICrossChainManager
