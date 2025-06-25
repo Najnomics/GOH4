@@ -190,7 +190,7 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         amountOut = amountOut > priceImpactAmount ? amountOut - priceImpactAmount : 0;
     }
 
-    /// @notice Get liquidity depth analysis for a pool
+    /// @notice Get detailed liquidity depth analysis using V4 core
     function getLiquidityDepth(PoolKey memory key) 
         external 
         view 
@@ -198,21 +198,20 @@ contract UniswapV4Integration is ImmutableState, Ownable {
     {
         PoolId poolId = key.toId();
         
-        // Note: Direct liquidity access may not be available in current v4-core
-        // Using simplified approach for demonstration
-        uint128 liquidity = 1000000; // Placeholder value
-        // Note: Actual slot0 access would need proper v4-core integration
-        // (, int24 tick, , ) = poolManager.getSlot0(poolId);
+        // Get current pool state
+        (uint160 sqrtPriceX96, int24 tick, , ) = poolManager.getSlot0(poolId);
+        uint128 liquidity = poolManager.getLiquidity(poolId);
         
         depth = LiquidityDepth({
             totalLiquidity: uint256(liquidity),
             activeRangeLiquidity: uint256(liquidity), // Simplified
             tickSpacing: uint256(int256(key.tickSpacing)),
-            nearestActiveTick: 0 // Would need actual tick from slot0
+            nearestActiveTick: tick,
+            currentTick: tick
         });
     }
 
-    /// @notice Execute a swap with slippage protection
+    /// @notice Execute a swap with slippage protection using V4 Router
     function executeSwapWithSlippage(
         PoolKey memory key,
         SwapParams memory params,
@@ -226,16 +225,20 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         }
 
         if (quote.amountOut < minAmountOut) {
-            revert Errors.InvalidSwapParams();
+            revert Errors.ExceedsMaxSlippage();
         }
 
-        // Execute the swap using pool manager directly
-        amountOut = _executeSwap(key, params, recipient);
+        // Execute the swap using V4 Router
+        amountOut = _executeSwapThroughRouter(key, params, recipient);
 
         // Verify slippage
         if (amountOut < minAmountOut) {
-            revert Errors.InvalidSwapParams();
+            revert Errors.ExceedsMaxSlippage();
         }
+
+        emit SwapExecuted(key.toId(), msg.sender, 
+            uint256(params.amountSpecified > 0 ? params.amountSpecified : -params.amountSpecified), 
+            amountOut);
     }
 
     /// @notice Check if a pool has sufficient liquidity for a swap
