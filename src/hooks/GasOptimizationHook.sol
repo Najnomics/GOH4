@@ -118,7 +118,7 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
 
     /// @inheritdoc IGasOptimizationHook
     function getOptimizationQuote(
-        SwapParams calldata params,
+        IPoolManager.SwapParams calldata params,
         PoolKey calldata key
     ) external view override returns (OptimizationQuote memory) {
         SwapContext memory context = SwapContext({
