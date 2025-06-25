@@ -252,7 +252,8 @@ contract ChainlinkIntegration is IChainlinkAggregator, Ownable {
             // Check if price is stale
             bool isStale = block.timestamp - updatedAt > MAX_PRICE_AGE;
 
-            emit PriceDataQueried(token, uint256(price), updatedAt);
+            // Note: Removed emit statement as this is a view function
+            // emit PriceDataQueried(token, uint256(price), updatedAt);
 
             return PriceData({
                 price: uint256(price),
