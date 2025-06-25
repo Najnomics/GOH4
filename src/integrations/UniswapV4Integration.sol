@@ -338,23 +338,21 @@ contract UniswapV4Integration is ImmutableState, Ownable {
     }
 
     // Internal functions
-    function _calculatePriceImpact(
+    function _calculatePriceImpactBPS(
         PoolKey memory key,
         SwapParams memory params,
         uint256 amountOut
     ) internal view returns (uint256 priceImpact) {
         uint256 amountIn = uint256(params.amountSpecified > 0 ? params.amountSpecified : -params.amountSpecified);
         
-        // Simplified price impact calculation
-        // In practice, this would compare the execution price to the current pool price
+        // Get current pool liquidity
         PoolId poolId = key.toId();
-        // Note: Direct liquidity access may not be available in current v4-core
-        // Using simplified approach for demonstration
-        uint128 liquidity = 1000000; // Placeholder value
+        uint128 liquidity = poolManager.getLiquidity(poolId);
         
         if (liquidity == 0) return type(uint256).max;
         
-        // Approximate price impact based on trade size relative to liquidity
+        // Calculate price impact based on trade size relative to available liquidity
+        // This is a simplified calculation - production would use actual price formulas
         priceImpact = (amountIn * Constants.BASIS_POINTS_DENOMINATOR) / (uint256(liquidity) + amountIn);
         
         // Cap at reasonable maximum
@@ -363,11 +361,9 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         }
     }
 
-    function _estimatePriceImpact(PoolKey memory key, uint256 amountIn) internal view returns (uint256) {
+    function _estimatePriceImpactBPS(PoolKey memory key, uint256 amountIn) internal view returns (uint256) {
         PoolId poolId = key.toId();
-        // Note: Direct liquidity access may not be available in current v4-core
-        // Using simplified approach for demonstration
-        uint128 liquidity = 1000000; // Placeholder value
+        uint128 liquidity = poolManager.getLiquidity(poolId);
         
         if (liquidity == 0) return type(uint256).max;
         
@@ -383,16 +379,31 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         return 60; // Default
     }
 
-    // Execute swap using pool manager directly
-    function _executeSwap(
+    // Execute swap using V4 Router
+    function _executeSwapThroughRouter(
         PoolKey memory key,
         SwapParams memory params,
         address recipient
     ) internal returns (uint256 amountOut) {
-        // This would integrate with pool manager for actual swap execution
+        // This would integrate with V4 Router for actual swap execution
         // For now, return a simulated result
         uint256 amountIn = uint256(params.amountSpecified > 0 ? params.amountSpecified : -params.amountSpecified);
+        
+        // Handle token transfers
+        if (Currency.unwrap(key.currency0) != address(0)) {
+            IERC20(Currency.unwrap(key.currency0)).safeTransferFrom(msg.sender, address(this), amountIn);
+        }
+        
+        // Simulate swap execution
         amountOut = amountIn - (amountIn * key.fee / 1000000); // Basic fee calculation
+        
+        // Transfer output tokens
+        if (Currency.unwrap(key.currency1) != address(0)) {
+            IERC20(Currency.unwrap(key.currency1)).safeTransfer(recipient, amountOut);
+        } else {
+            (bool success,) = recipient.call{value: amountOut}("");
+            if (!success) revert Errors.TransferFailed();
+        }
     }
 
     receive() external payable {}
