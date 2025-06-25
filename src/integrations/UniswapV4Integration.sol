@@ -19,19 +19,30 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {Constants} from "../utils/Constants.sol";
 import {Errors} from "../utils/Errors.sol";
 
-/// @title UniswapV4 Integration using V4 Periphery for Enhanced Pool Interactions
+/// @title Enhanced UniswapV4 Integration using V4 Periphery for Pool Interactions
 contract UniswapV4Integration is ImmutableState, Ownable {
     using PoolIdLibrary for PoolKey;
     using CurrencyLibrary for Currency;
-    using BipsLibrary for uint256;
+    using StateLibrary for IPoolManager;
+    using SafeERC20 for IERC20;
 
-    struct PoolLiquidityInfo {
-        uint128 liquidity;
+    // V4 Periphery contracts
+    PositionManager public immutable positionManager;
+    IV4Router public immutable router;
+
+    struct PoolState {
         uint160 sqrtPriceX96;
         int24 tick;
+        uint24 protocolFee;
+        uint24 lpFee;
+    }
+
+    struct LiquidityInfo {
+        uint128 liquidity;
         uint256 feeGrowthGlobal0X128;
         uint256 feeGrowthGlobal1X128;
-        uint128 protocolFee;
+        uint128 protocolFeesAccrued0;
+        uint128 protocolFeesAccrued1;
     }
 
     struct SwapQuote {
@@ -40,6 +51,7 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         uint256 liquidityUsed;
         uint256 feeAmount;
         bool isValid;
+        PoolState poolState;
     }
 
     struct LiquidityDepth {
@@ -47,10 +59,11 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         uint256 activeRangeLiquidity;
         uint256 tickSpacing;
         int24 nearestActiveTick;
+        int24 currentTick;
     }
 
     // Pool monitoring
-    mapping(PoolId => PoolLiquidityInfo) public poolInfo;
+    mapping(PoolId => LiquidityInfo) public poolLiquidityInfo;
     mapping(PoolId => bool) public monitoredPools;
     
     // Slippage protection
