@@ -414,7 +414,7 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
             );
             
             // Approve SpokePool
-            IERC20(params.originToken).safeApprove(spokePool, params.amount);
+            IERC20(params.originToken).forceApprove(spokePool, params.amount);
         }
     }
 

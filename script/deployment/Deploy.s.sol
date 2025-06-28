@@ -28,7 +28,10 @@ contract Deploy is Script {
         console.log("ChainlinkIntegration deployed to:", address(chainlinkIntegration));
         
         // Deploy Across Integration
-        AcrossIntegration acrossIntegration = new AcrossIntegration(deployer);
+        AcrossIntegration acrossIntegration = new AcrossIntegration(
+            deployer,
+            address(0) // Hub pool address - should be set to actual address on mainnet
+        );
         console.log("AcrossIntegration deployed to:", address(acrossIntegration));
         
         // Deploy Gas Price Oracle

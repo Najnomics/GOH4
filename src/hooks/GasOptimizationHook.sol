@@ -5,6 +5,7 @@ import {IPoolManager} from "@uniswap/v4-core/src/interfaces/IPoolManager.sol";
 import {PoolKey} from "@uniswap/v4-core/src/types/PoolKey.sol";
 import {BalanceDelta} from "@uniswap/v4-core/src/types/BalanceDelta.sol";
 import {BeforeSwapDelta, BeforeSwapDeltaLibrary} from "@uniswap/v4-core/src/types/BeforeSwapDelta.sol";
+import {SwapParams} from "@uniswap/v4-core/src/types/PoolOperation.sol";
 import {BaseHook} from "@uniswap/v4-periphery/src/utils/BaseHook.sol";
 import {OptimizedBaseHook} from "./base/OptimizedBaseHook.sol";
 import {IGasOptimizationHook} from "../interfaces/IGasOptimizationHook.sol";
@@ -54,23 +55,13 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
         chainlinkIntegration = IChainlinkAggregator(_chainlinkIntegration);
     }
 
-    /// @notice Hook function called before a swap is executed 
-    function beforeSwap(
-        address sender,
-        PoolKey calldata key,
-        IPoolManager.SwapParams calldata params,
-        bytes calldata hookData
-    ) external override whenNotPaused validPoolKey(key) nonReentrant returns (bytes4, BeforeSwapDelta, uint24) {
-        return _beforeSwap(sender, key, params, hookData);
-    }
-
     /// @notice Internal hook called before a swap is executed
     function _beforeSwap(
         address sender,
         PoolKey calldata key,
-        IPoolManager.SwapParams calldata params,
+        SwapParams calldata params,
         bytes calldata hookData
-    ) internal returns (bytes4, BeforeSwapDelta, uint24) {
+    ) internal override whenNotPaused validPoolKey(key) nonReentrant returns (bytes4, BeforeSwapDelta, uint24) {
         _validateSwapParams(params);
         
         SwapContext memory context = SwapContext({
@@ -118,7 +109,7 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
 
     /// @inheritdoc IGasOptimizationHook
     function getOptimizationQuote(
-        IPoolManager.SwapParams calldata params,
+        SwapParams calldata params,
         PoolKey calldata key
     ) external view override returns (OptimizationQuote memory) {
         SwapContext memory context = SwapContext({

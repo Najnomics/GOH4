@@ -5,19 +5,22 @@ import {Test, console} from "forge-std/Test.sol";
 import {CostCalculator} from "../../src/core/CostCalculator.sol";
 import {ICostCalculator} from "../../src/interfaces/ICostCalculator.sol";
 import {GasPriceOracle} from "../../src/core/GasPriceOracle.sol";
+import {MockChainlinkIntegration} from "../mocks/MockChainlinkIntegration.sol";
 import {Constants} from "../../src/utils/Constants.sol";
 import {Errors} from "../../src/utils/Errors.sol";
 
 contract CostCalculatorTest is Test {
     CostCalculator calculator;
     GasPriceOracle oracle;
+    MockChainlinkIntegration mockChainlink;
     address owner = address(0x1);
     address keeper = address(0x2);
     address user = address(0x3);
 
     function setUp() public {
         oracle = new GasPriceOracle(owner, keeper);
-        calculator = new CostCalculator(owner, address(oracle), address(0)); // No chainlink for this test
+        mockChainlink = new MockChainlinkIntegration();
+        calculator = new CostCalculator(owner, address(oracle), address(mockChainlink));
         
         // Setup initial gas prices
         vm.prank(keeper);

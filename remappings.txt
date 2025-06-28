@@ -5,4 +5,4 @@
 @chainlink/contracts/=lib/chainlink-brownie-contracts/contracts/
 @chainlink/contracts/src/v0.8/interfaces/=lib/chainlink-brownie-contracts/contracts/src/v0.8/shared/interfaces/
 forge-std/=lib/forge-std/src/
-solmate/=lib/solmate/src/
+solmate/=lib/solmate/

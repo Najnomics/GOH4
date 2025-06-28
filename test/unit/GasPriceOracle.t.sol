@@ -79,10 +79,10 @@ contract GasPriceOracleTest is Test {
     }
 
     function testGasPriceTrend() public {
-        vm.prank(keeper);
-        
         // Add multiple price updates
         for (uint256 i = 0; i < 5; i++) {
+            vm.prank(keeper);
+            
             uint256[] memory chainIds = new uint256[](1);
             chainIds[0] = Constants.ETHEREUM_CHAIN_ID;
             

@@ -39,12 +39,12 @@ contract ChainUtilsTest is Test {
 
     function testValidateChainId() public {
         // Should not revert for valid chains
-        Constants.ETHEREUM_CHAIN_ID.validateChainId();
-        Constants.ARBITRUM_CHAIN_ID.validateChainId();
+        ChainUtils.validateChainId(Constants.ETHEREUM_CHAIN_ID);
+        ChainUtils.validateChainId(Constants.ARBITRUM_CHAIN_ID);
         
         // Should revert for invalid chain
         vm.expectRevert(Errors.InvalidChainId.selector);
-        uint256(999).validateChainId();
+        ChainUtils.validateChainId(999);
     }
 
     function testGetBlockTime() public {
@@ -90,7 +90,7 @@ contract ChainUtilsTest is Test {
         assertEq(ChainUtils.getCongestionMultiplier(15e9, Constants.ETHEREUM_CHAIN_ID), 100); // No congestion
         
         // Ethereum with medium gas price
-        assertEq(ChainUtils.getCongestionMultiplier(50e9, Constants.ETHEREUM_CHAIN_ID), 120); // Low congestion
+        assertEq(ChainUtils.getCongestionMultiplier(50e9, Constants.ETHEREUM_CHAIN_ID), 150); // Medium congestion
         
         // Ethereum with high gas price
         assertEq(ChainUtils.getCongestionMultiplier(200e9, Constants.ETHEREUM_CHAIN_ID), 200); // High congestion

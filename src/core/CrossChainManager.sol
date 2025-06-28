@@ -74,7 +74,7 @@ contract CrossChainManager is ICrossChainManager, Ownable, ReentrancyGuard {
         swap.sourceChainId = params.sourceChainId;
         swap.destinationChainId = params.destinationChainId;
         swap.initiatedAt = block.timestamp;
-        swap.status = SwapStatus.Initiated;
+        swap.status = SwapStatus.Bridging; // Automatically start bridging
 
         userActiveSwaps[params.user].push(swapId);
         totalSwaps++;
@@ -88,6 +88,9 @@ contract CrossChainManager is ICrossChainManager, Ownable, ReentrancyGuard {
             params.tokenOut,
             params.amountIn
         );
+
+        // In a real implementation, this would call the bridge protocol
+        // For now, we simulate the bridge initiation by setting status to Bridging
 
         return swapId;
     }
