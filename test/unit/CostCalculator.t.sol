@@ -153,4 +153,140 @@ contract CostCalculatorTest is Test {
         bool reliable = calculator.isCostCalculationReliable(Constants.ETHEREUM_CHAIN_ID);
         assertTrue(reliable); // Should be reliable with fresh gas prices
     }
+
+    // Additional tests to improve coverage
+    function testCalculateSlippageCost() public {
+        uint256 amount = 1000e18;
+        uint256 slippageBPS = 50; // 0.5%
+        
+        uint256 slippageCost = calculator.calculateSlippageCost(amount, slippageBPS);
+        assertEq(slippageCost, amount * slippageBPS / 10000);
+    }
+
+    function testCalculateMEVProtectionFee() public {
+        uint256 amount = 1000e18;
+        uint256 mevFeeBPS = 10; // 0.1%
+        
+        uint256 mevFee = calculator.calculateMEVProtectionFee(amount, mevFeeBPS);
+        assertEq(mevFee, amount * mevFeeBPS / 10000);
+    }
+
+    function testValidateChainSupport() public view {
+        assertTrue(calculator.isChainSupported(Constants.ETHEREUM_CHAIN_ID));
+        assertTrue(calculator.isChainSupported(Constants.ARBITRUM_CHAIN_ID));
+        assertFalse(calculator.isChainSupported(999999)); // Unsupported chain
+    }
+
+    function testGetCostBreakdown() public {
+        ICostCalculator.CostParams memory params = ICostCalculator.CostParams({
+            gasUsed: 200000,
+            gasPrice: 30e9,
+            tokenIn: address(0),
+            tokenOut: address(0x123),
+            amountIn: 1000e18,
+            chainId: Constants.ETHEREUM_CHAIN_ID
+        });
+        
+        ICostCalculator.TotalCost memory cost = calculator.calculateTotalCost(params);
+        
+        // Verify all components are calculated
+        assertGt(cost.gasCostUSD, 0);
+        assertGt(cost.bridgeFeeUSD, 0);
+        assertGt(cost.totalCostUSD, cost.gasCostUSD);
+    }
+
+    function testEmergencyConfiguration() public {
+        // Test emergency settings
+        ICostCalculator.CostParameters memory emergencyParams = ICostCalculator.CostParameters({
+            baseBridgeFeeUSD: 1e18, // $1
+            bridgeFeePercentageBPS: 5, // 0.05%
+            maxSlippageBPS: 500, // 5%
+            mevProtectionFeeBPS: 50, // 0.5%
+            gasEstimationMultiplier: 20000 // 2x
+        });
+        
+        vm.prank(owner);
+        calculator.updateCostParameters(emergencyParams);
+        
+        // Verify parameters updated
+        ICostCalculator.CostParameters memory updated = calculator.getCostParameters();
+        assertEq(updated.baseBridgeFeeUSD, 1e18);
+        assertEq(updated.gasEstimationMultiplier, 20000);
+    }
+
+    function testCostCalculationWithDifferentTokens() public {
+        address weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+        address usdc = 0xA0b86a33E6C4B4C2Cc6c1c4CdbBD0d8C7B4e5d2A;
+        
+        ICostCalculator.CostParams memory ethParams = ICostCalculator.CostParams({
+            gasUsed: 150000,
+            gasPrice: 25e9,
+            tokenIn: address(0), // ETH
+            tokenOut: usdc,
+            amountIn: 10e18,
+            chainId: Constants.ETHEREUM_CHAIN_ID
+        });
+        
+        ICostCalculator.CostParams memory tokenParams = ICostCalculator.CostParams({
+            gasUsed: 150000,
+            gasPrice: 25e9,
+            tokenIn: weth,
+            tokenOut: usdc,
+            amountIn: 10e18,
+            chainId: Constants.ETHEREUM_CHAIN_ID
+        });
+        
+        ICostCalculator.TotalCost memory ethCost = calculator.calculateTotalCost(ethParams);
+        ICostCalculator.TotalCost memory tokenCost = calculator.calculateTotalCost(tokenParams);
+        
+        // Both should have reasonable costs
+        assertGt(ethCost.totalCostUSD, 0);
+        assertGt(tokenCost.totalCostUSD, 0);
+    }
+
+    function testInvalidParameterValidation() public {
+        // Test invalid gas estimation multiplier
+        ICostCalculator.CostParameters memory invalidParams = ICostCalculator.CostParameters({
+            baseBridgeFeeUSD: 5e18,
+            bridgeFeePercentageBPS: 20,
+            maxSlippageBPS: 100,
+            mevProtectionFeeBPS: 10,
+            gasEstimationMultiplier: 50000 // 5x (too high)
+        });
+        
+        vm.prank(owner);
+        vm.expectRevert();
+        calculator.updateCostParameters(invalidParams);
+    }
+
+    function testCostParametersGetters() public view {
+        ICostCalculator.CostParameters memory params = calculator.getCostParameters();
+        
+        assertGt(params.baseBridgeFeeUSD, 0);
+        assertGt(params.bridgeFeePercentageBPS, 0);
+        assertGt(params.maxSlippageBPS, 0);
+        assertGt(params.gasEstimationMultiplier, 0);
+    }
+
+    function testCrossChainCostComparison() public {
+        ICostCalculator.OptimizationParams memory params = ICostCalculator.OptimizationParams({
+            tokenIn: address(0),
+            tokenOut: address(0x123),
+            amountIn: 5000e18,
+            gasUsed: 180000,
+            currentGasPrice: 40e9,
+            userPreferences: ICostCalculator.UserPreferences({
+                minSavingsThresholdBPS: 300,
+                minAbsoluteSavingsUSD: 10e18,
+                maxBridgeTime: 1800,
+                preferredChains: new uint256[](0)
+            })
+        });
+        
+        (uint256 optimalChain, uint256 expectedSavings) = calculator.findOptimalChain(params);
+        
+        // Should find an optimal chain with some savings
+        assertNotEq(optimalChain, Constants.ETHEREUM_CHAIN_ID); // Should suggest different chain
+        assertGt(expectedSavings, 0);
+    }
 }
