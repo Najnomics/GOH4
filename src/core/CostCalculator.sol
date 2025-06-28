@@ -35,7 +35,7 @@ contract CostCalculator is ICostCalculator, Ownable {
             bridgeFeePercentageBPS: 10, // 0.1%
             maxSlippageBPS: 50, // 0.5%
             mevProtectionFeeBPS: 5, // 0.05%
-            gasEstimationMultiplier: 120 // 1.2x safety margin
+            gasEstimationMultiplier: 12000 // 1.2x (120% in basis points)
         });
     }
 
@@ -138,9 +138,13 @@ contract CostCalculator is ICostCalculator, Ownable {
     /// @inheritdoc ICostCalculator
     function calculateGasCostUSD(uint256 chainId, uint256 gasLimit) public view override returns (uint256) {
         uint256 gasPriceUSD = gasPriceOracle.getGasPriceUSD(chainId);
-        uint256 adjustedGasLimit = gasLimit.applyGasSafetyMargin(
-            costParameters.gasEstimationMultiplier - Constants.BASIS_POINTS_DENOMINATOR
-        );
+        
+        // Apply safety margin - gasEstimationMultiplier is in basis points
+        uint256 adjustedGasLimit = gasLimit;
+        if (costParameters.gasEstimationMultiplier > Constants.BASIS_POINTS_DENOMINATOR) {
+            uint256 safetyMarginBPS = costParameters.gasEstimationMultiplier - Constants.BASIS_POINTS_DENOMINATOR;
+            adjustedGasLimit = gasLimit.applyGasSafetyMargin(safetyMarginBPS);
+        }
         
         return (adjustedGasLimit * gasPriceUSD) / 1e9; // Convert from gwei to full units
     }

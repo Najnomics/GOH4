@@ -6,10 +6,19 @@ import {ChainUtils} from "../../src/libraries/ChainUtils.sol";
 import {Constants} from "../../src/utils/Constants.sol";
 import {Errors} from "../../src/utils/Errors.sol";
 
+// Helper contract to test library functions with expectRevert
+contract ChainUtilsWrapper {
+    function validateChainId(uint256 chainId) external pure {
+        ChainUtils.validateChainId(chainId);
+    }
+}
+
 contract ChainUtilsTest is Test {
     using ChainUtils for uint256;
 
-    function testGetChainName() public {
+    ChainUtilsWrapper wrapper;
+
+    function testGetChainName() public pure {
         assertEq(Constants.ETHEREUM_CHAIN_ID.getChainName(), "Ethereum");
         assertEq(Constants.ARBITRUM_CHAIN_ID.getChainName(), "Arbitrum");
         assertEq(Constants.OPTIMISM_CHAIN_ID.getChainName(), "Optimism");
@@ -18,7 +27,7 @@ contract ChainUtilsTest is Test {
         assertEq(uint256(999).getChainName(), "Unknown");
     }
 
-    function testIsSupportedChain() public {
+    function testIsSupportedChain() public pure {
         assertTrue(Constants.ETHEREUM_CHAIN_ID.isSupportedChain());
         assertTrue(Constants.ARBITRUM_CHAIN_ID.isSupportedChain());
         assertTrue(Constants.OPTIMISM_CHAIN_ID.isSupportedChain());
@@ -27,7 +36,7 @@ contract ChainUtilsTest is Test {
         assertFalse(uint256(999).isSupportedChain());
     }
 
-    function testGetSupportedChains() public {
+    function testGetSupportedChains() public pure {
         uint256[] memory chains = ChainUtils.getSupportedChains();
         assertEq(chains.length, 5);
         assertEq(chains[0], Constants.ETHEREUM_CHAIN_ID);
@@ -37,17 +46,21 @@ contract ChainUtilsTest is Test {
         assertEq(chains[4], Constants.BASE_CHAIN_ID);
     }
 
-    function testValidateChainId() public {
-        // Should not revert for valid chains
-        ChainUtils.validateChainId(Constants.ETHEREUM_CHAIN_ID);
-        ChainUtils.validateChainId(Constants.ARBITRUM_CHAIN_ID);
-        
-        // Should revert for invalid chain
-        vm.expectRevert(Errors.InvalidChainId.selector);
-        ChainUtils.validateChainId(999);
+    function setUp() public {
+        wrapper = new ChainUtilsWrapper();
     }
 
-    function testGetBlockTime() public {
+    function testValidateChainId() public {
+        // Should not revert for valid chains
+        wrapper.validateChainId(Constants.ETHEREUM_CHAIN_ID);
+        wrapper.validateChainId(Constants.ARBITRUM_CHAIN_ID);
+        
+        // Should revert for invalid chain
+        vm.expectRevert(abi.encodeWithSelector(Errors.InvalidChainId.selector));
+        wrapper.validateChainId(999);
+    }
+
+    function testGetBlockTime() public pure {
         assertEq(Constants.ETHEREUM_CHAIN_ID.getBlockTime(), 12);
         assertEq(Constants.ARBITRUM_CHAIN_ID.getBlockTime(), 1);
         assertEq(Constants.OPTIMISM_CHAIN_ID.getBlockTime(), 2);
@@ -55,7 +68,7 @@ contract ChainUtilsTest is Test {
         assertEq(Constants.BASE_CHAIN_ID.getBlockTime(), 2);
     }
 
-    function testGetFinalityTime() public {
+    function testGetFinalityTime() public pure {
         assertEq(Constants.ETHEREUM_CHAIN_ID.getFinalityTime(), 780);
         assertEq(Constants.ARBITRUM_CHAIN_ID.getFinalityTime(), 1200);
         assertEq(Constants.OPTIMISM_CHAIN_ID.getFinalityTime(), 1200);
@@ -63,7 +76,7 @@ contract ChainUtilsTest is Test {
         assertEq(Constants.BASE_CHAIN_ID.getFinalityTime(), 1200);
     }
 
-    function testIsLayer2() public {
+    function testIsLayer2() public pure {
         assertFalse(Constants.ETHEREUM_CHAIN_ID.isLayer2());
         assertTrue(Constants.ARBITRUM_CHAIN_ID.isLayer2());
         assertTrue(Constants.OPTIMISM_CHAIN_ID.isLayer2());
@@ -71,7 +84,7 @@ contract ChainUtilsTest is Test {
         assertTrue(Constants.BASE_CHAIN_ID.isLayer2());
     }
 
-    function testGetBridgeTime() public {
+    function testGetBridgeTime() public pure {
         // Same chain
         assertEq(ChainUtils.getBridgeTime(Constants.ETHEREUM_CHAIN_ID, Constants.ETHEREUM_CHAIN_ID), 0);
         
@@ -85,7 +98,7 @@ contract ChainUtilsTest is Test {
         assertEq(ChainUtils.getBridgeTime(Constants.ARBITRUM_CHAIN_ID, Constants.OPTIMISM_CHAIN_ID), 600);
     }
 
-    function testGetCongestionMultiplier() public {
+    function testGetCongestionMultiplier() public pure {
         // Ethereum with low gas price
         assertEq(ChainUtils.getCongestionMultiplier(15e9, Constants.ETHEREUM_CHAIN_ID), 100); // No congestion
         
