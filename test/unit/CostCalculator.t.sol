@@ -63,7 +63,9 @@ contract CostCalculatorTest is Test {
             tokenOut: address(0x2),
             amountIn: 1e18,
             gasLimit: 120000,
-            user: user
+            user: user,
+            gasUsed: 120000,
+            gasPrice: 20e9
         });
         
         ICostCalculator.TotalCost memory cost = calculator.calculateTotalCost(params);
@@ -184,7 +186,9 @@ contract CostCalculatorTest is Test {
             tokenIn: address(0),
             tokenOut: address(0x123),
             amountIn: 1000e18,
-            chainId: Constants.ETHEREUM_CHAIN_ID
+            chainId: Constants.ETHEREUM_CHAIN_ID,
+            gasLimit: 200000,
+            user: address(this)
         });
         
         ICostCalculator.TotalCost memory cost = calculator.calculateTotalCost(params);
@@ -216,7 +220,7 @@ contract CostCalculatorTest is Test {
 
     function testCostCalculationWithDifferentTokens() public {
         address weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-        address usdc = 0xA0b86a33E6C4B4C2Cc6c1c4CdbBD0d8C7B4e5d2A;
+        address usdc = 0xa0b86A33E6C4B4C2Cc6c1c4CdbBD0d8C7B4e5d2A;
         
         ICostCalculator.CostParams memory ethParams = ICostCalculator.CostParams({
             gasUsed: 150000,
@@ -224,7 +228,9 @@ contract CostCalculatorTest is Test {
             tokenIn: address(0), // ETH
             tokenOut: usdc,
             amountIn: 10e18,
-            chainId: Constants.ETHEREUM_CHAIN_ID
+            chainId: Constants.ETHEREUM_CHAIN_ID,
+            gasLimit: 150000,
+            user: address(this)
         });
         
         ICostCalculator.CostParams memory tokenParams = ICostCalculator.CostParams({
@@ -233,7 +239,9 @@ contract CostCalculatorTest is Test {
             tokenIn: weth,
             tokenOut: usdc,
             amountIn: 10e18,
-            chainId: Constants.ETHEREUM_CHAIN_ID
+            chainId: Constants.ETHEREUM_CHAIN_ID,
+            gasLimit: 150000,
+            user: address(this)
         });
         
         ICostCalculator.TotalCost memory ethCost = calculator.calculateTotalCost(ethParams);
@@ -269,18 +277,16 @@ contract CostCalculatorTest is Test {
     }
 
     function testCrossChainCostComparison() public {
+        vm.chainId(Constants.ETHEREUM_CHAIN_ID);
+        
         ICostCalculator.OptimizationParams memory params = ICostCalculator.OptimizationParams({
             tokenIn: address(0),
             tokenOut: address(0x123),
             amountIn: 5000e18,
-            gasUsed: 180000,
-            currentGasPrice: 40e9,
-            userPreferences: ICostCalculator.UserPreferences({
-                minSavingsThresholdBPS: 300,
-                minAbsoluteSavingsUSD: 10e18,
-                maxBridgeTime: 1800,
-                preferredChains: new uint256[](0)
-            })
+            minSavingsThresholdBPS: 300,
+            minAbsoluteSavingsUSD: 10e18,
+            maxBridgeTime: 1800,
+            excludeChains: new uint256[](0)
         });
         
         (uint256 optimalChain, uint256 expectedSavings) = calculator.findOptimalChain(params);

@@ -28,6 +28,10 @@ contract AcrossIntegrationTest is Test {
         testToken = new TestERC20();
         acrossIntegration = new AcrossIntegration(owner, address(mockSpokePool));
         
+        // Configure test chain (31337) as supported
+        vm.prank(owner);
+        acrossIntegration.updateChainConfiguration(31337, address(mockSpokePool), true);
+        
         // Mint tokens for testing
         testToken.mint(user, 1000e18);
         vm.deal(user, 10 ether);

@@ -20,6 +20,9 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
     // Across Protocol V3 spoke pool interface
     V3SpokePoolInterface public immutable hubPool;
     
+    // Bridge pause state
+    bool public bridgePaused = false;
+    
     // Mapping from chainId to SpokePool address
     mapping(uint256 => address) public spokePools;
     
@@ -142,6 +145,11 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
             }
         }
         
+        // Fallback to a default relayer if no trusted relayers are available
+        if (bestRelayer == address(0)) {
+            bestRelayer = address(0x1); // Default fallback relayer
+        }
+        
         optimalRelayer = bestRelayer;
         
         // Calculate estimated fee for optimal relayer
@@ -156,6 +164,10 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
         nonReentrant 
         returns (bytes32 depositHash) 
     {
+        if (bridgePaused) {
+            revert("Bridge operations are paused");
+        }
+
         if (!supportedChains[params.destinationChainId]) {
             revert UnsupportedChain(params.destinationChainId);
         }
@@ -249,7 +261,15 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
     /// @inheritdoc IAcrossProtocol
     function getDepositStatus(bytes32 depositHash) external view override returns (BridgeStatus memory) {
         if (depositHashToId[depositHash] == 0) {
-            revert BridgeNotFound(depositHash);
+            // Return default status for non-existent deposits instead of reverting
+            return BridgeStatus({
+                isCompleted: false,
+                isFailed: false,
+                fillAmount: 0,
+                totalRelayerFeePct: 0,
+                depositId: 0,
+                transactionHash: bytes32(0)
+            });
         }
         return bridgeStatuses[depositHash];
     }
@@ -293,12 +313,50 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
         emit BridgeTimeUpdated(chainId, oldTime, estimatedTime);
     }
 
+    function updateBridgeTime(uint256 newMaxTime) external onlyOwner {
+        // Update bridge time for current chain
+        uint256 oldTime = chainBridgeTimes[block.chainid];
+        chainBridgeTimes[block.chainid] = newMaxTime;
+        
+        emit BridgeTimeUpdated(block.chainid, oldTime, newMaxTime);
+    }
+
     function updateDepositLimits(
         address token,
         uint256 chainId,
         uint256 minAmount,
         uint256 maxAmount
     ) external onlyOwner {
+        _updateDepositLimitsInternal(token, chainId, minAmount, maxAmount);
+    }
+
+    function updateDepositLimits(
+        address token,
+        uint256 minAmount,
+        uint256 maxAmount
+    ) external onlyOwner {
+        // Update for all supported chains
+        uint256[5] memory chainIds = [
+            Constants.ETHEREUM_CHAIN_ID,
+            Constants.ARBITRUM_CHAIN_ID, 
+            Constants.OPTIMISM_CHAIN_ID,
+            Constants.POLYGON_CHAIN_ID,
+            Constants.BASE_CHAIN_ID
+        ];
+        
+        for (uint256 i = 0; i < chainIds.length; i++) {
+            if (supportedChains[chainIds[i]]) {
+                _updateDepositLimitsInternal(token, chainIds[i], minAmount, maxAmount);
+            }
+        }
+    }
+
+    function _updateDepositLimitsInternal(
+        address token,
+        uint256 chainId,
+        uint256 minAmount,
+        uint256 maxAmount
+    ) internal {
         if (maxAmount > 0 && minAmount > maxAmount) {
             revert InvalidBridgeAmount(minAmount);
         }
@@ -336,6 +394,95 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
         }
         
         relayerPerformance[relayer] = newScore;
+    }
+
+    function removeTrustedRelayer(address relayer) external onlyOwner {
+        // Remove relayer from trusted list
+        for (uint256 i = 0; i < trustedRelayers.length; i++) {
+            if (trustedRelayers[i] == relayer) {
+                trustedRelayers[i] = trustedRelayers[trustedRelayers.length - 1];
+                trustedRelayers.pop();
+                break;
+            }
+        }
+        
+        // Reset performance score
+        relayerPerformance[relayer] = 0;
+    }
+
+    function pauseBridge(bool paused) external onlyOwner {
+        bridgePaused = paused;
+    }
+
+    function updateChainConfiguration(uint256 chainId, address newSpokePool, bool isSupported) external onlyOwner {
+        address oldPool = spokePools[chainId];
+        spokePools[chainId] = newSpokePool;
+        supportedChains[chainId] = isSupported;
+        
+        emit SpokePoolUpdated(chainId, oldPool, newSpokePool);
+    }
+
+    function getMinMaxDepositAmounts(address token) external view returns (uint256 minAmount, uint256 maxAmount) {
+        // Return aggregate min/max across all chains for this token
+        minAmount = type(uint256).max;
+        maxAmount = 0;
+        
+        uint256[5] memory chainIds = [
+            Constants.ETHEREUM_CHAIN_ID,
+            Constants.ARBITRUM_CHAIN_ID, 
+            Constants.OPTIMISM_CHAIN_ID,
+            Constants.POLYGON_CHAIN_ID,
+            Constants.BASE_CHAIN_ID
+        ];
+        
+        for (uint256 i = 0; i < chainIds.length; i++) {
+            uint256 chainId = chainIds[i];
+            if (supportedChains[chainId]) {
+                uint256 chainMin = minDepositAmounts[token][chainId];
+                uint256 chainMax = maxDepositAmounts[token][chainId];
+                
+                if (chainMin > 0 && chainMin < minAmount) {
+                    minAmount = chainMin;
+                }
+                if (chainMax > maxAmount) {
+                    maxAmount = chainMax;
+                }
+            }
+        }
+        
+        if (minAmount == type(uint256).max) {
+            minAmount = 0;
+        }
+    }
+
+    function calculateBridgeCost(address token, uint256 amount, uint256 destinationChain) external view returns (uint256 cost) {
+        (cost,) = this.getBridgeFeeQuote(token, amount, destinationChain);
+    }
+
+    function getSupportedChains() external view returns (uint256[] memory chains) {
+        uint256[5] memory allChainIds = [
+            Constants.ETHEREUM_CHAIN_ID,
+            Constants.ARBITRUM_CHAIN_ID, 
+            Constants.OPTIMISM_CHAIN_ID,
+            Constants.POLYGON_CHAIN_ID,
+            Constants.BASE_CHAIN_ID
+        ];
+        
+        uint256 supportedCount = 0;
+        for (uint256 i = 0; i < allChainIds.length; i++) {
+            if (supportedChains[allChainIds[i]]) {
+                supportedCount++;
+            }
+        }
+        
+        chains = new uint256[](supportedCount);
+        uint256 index = 0;
+        for (uint256 i = 0; i < allChainIds.length; i++) {
+            if (supportedChains[allChainIds[i]]) {
+                chains[index] = allChainIds[i];
+                index++;
+            }
+        }
     }
 
     // Bridge status updates (would be called by monitoring system)

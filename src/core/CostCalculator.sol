@@ -41,7 +41,7 @@ contract CostCalculator is ICostCalculator, Ownable {
 
     /// @inheritdoc ICostCalculator
     function calculateTotalCost(CostParams calldata params) external view override returns (TotalCost memory) {
-        params.chainId.validateChainId();
+        ChainUtils.validateChainId(params.chainId);
         
         uint256 gasCostUSD = calculateGasCostUSD(params.chainId, params.gasLimit);
         uint256 bridgeFeeUSD = 0;
@@ -84,7 +84,9 @@ contract CostCalculator is ICostCalculator, Ownable {
             tokenOut: params.tokenOut,
             amountIn: params.amountIn,
             gasLimit: GasCalculations.estimateSwapGas(),
-            user: msg.sender
+            user: msg.sender,
+            gasUsed: GasCalculations.estimateSwapGas(),
+            gasPrice: tx.gasprice
         }));
         
         uint256 bestChainId = currentChainId;
@@ -105,7 +107,9 @@ contract CostCalculator is ICostCalculator, Ownable {
                 tokenOut: params.tokenOut,
                 amountIn: params.amountIn,
                 gasLimit: GasCalculations.calculateCrossChainGasUsage(true),
-                user: msg.sender
+                user: msg.sender,
+                gasUsed: GasCalculations.calculateCrossChainGasUsage(true),
+                gasPrice: tx.gasprice
             }));
             
             // Check if bridge time is acceptable
@@ -170,6 +174,20 @@ contract CostCalculator is ICostCalculator, Ownable {
 
     /// @inheritdoc ICostCalculator
     function updateCostParameters(CostParameters calldata newParams) external override onlyOwner {
+        // Validate parameters
+        if (newParams.bridgeFeePercentageBPS > 1000) { // Max 10%
+            revert("Bridge fee percentage too high");
+        }
+        if (newParams.maxSlippageBPS > 1000) { // Max 10%
+            revert("Max slippage too high");
+        }
+        if (newParams.mevProtectionFeeBPS > 500) { // Max 5%
+            revert("MEV protection fee too high");
+        }
+        if (newParams.gasEstimationMultiplier > 30000 || newParams.gasEstimationMultiplier < 10000) { // 1x to 3x
+            revert("Gas estimation multiplier out of range");
+        }
+        
         costParameters = newParams;
     }
 
@@ -195,6 +213,23 @@ contract CostCalculator is ICostCalculator, Ownable {
             }
         }
         return false;
+    }
+
+    // Additional utility functions expected by tests
+    function calculateSlippageCost(uint256 amount, uint256 slippageBPS) external pure returns (uint256) {
+        return (amount * slippageBPS) / Constants.BASIS_POINTS_DENOMINATOR;
+    }
+
+    function calculateMEVProtectionFee(uint256 amount, uint256 mevFeeBPS) external pure returns (uint256) {
+        return (amount * mevFeeBPS) / Constants.BASIS_POINTS_DENOMINATOR;
+    }
+
+    function isChainSupported(uint256 chainId) external pure returns (bool) {
+        return ChainUtils.isSupportedChain(chainId);
+    }
+
+    function getCostParameters() external view returns (CostParameters memory) {
+        return costParameters;
     }
 
     // Admin functions

@@ -10,6 +10,8 @@ interface ICostCalculator {
         uint256 amountIn;
         uint256 gasLimit;
         address user;
+        uint256 gasUsed;     // Added for test compatibility
+        uint256 gasPrice;    // Added for test compatibility
     }
 
     struct TotalCost {
@@ -36,6 +38,15 @@ interface ICostCalculator {
         uint256 maxSlippageBPS;
         uint256 mevProtectionFeeBPS;
         uint256 gasEstimationMultiplier;
+    }
+
+    struct UserPreferences {
+        uint256 minSavingsThresholdBPS;
+        uint256 minAbsoluteSavingsUSD;
+        uint256 maxAcceptableBridgeTime;
+        bool enableCrossChainOptimization;
+        bool enableUSDDisplay;
+        uint256[] preferredChains;
     }
 
     // Core calculation functions

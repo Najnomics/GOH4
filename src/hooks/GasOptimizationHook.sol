@@ -243,7 +243,9 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
                 tokenOut: Currency.unwrap(context.poolKey.currency1),
                 amountIn: optimizationParams.amountIn,
                 gasLimit: GasCalculations.estimateSwapGas(),
-                user: context.user
+                user: context.user,
+                gasUsed: GasCalculations.estimateSwapGas(),
+                gasPrice: tx.gasprice
             })
         );
         
@@ -254,7 +256,9 @@ contract GasOptimizationHook is OptimizedBaseHook, IGasOptimizationHook {
                 tokenOut: Currency.unwrap(context.poolKey.currency1),
                 amountIn: optimizationParams.amountIn,
                 gasLimit: GasCalculations.calculateCrossChainGasUsage(true),
-                user: context.user
+                user: context.user,
+                gasUsed: GasCalculations.calculateCrossChainGasUsage(true),
+                gasPrice: tx.gasprice
             })
         );
         
