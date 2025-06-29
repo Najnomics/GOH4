@@ -146,7 +146,7 @@ contract StorageContractsTest is Test {
         assertTrue(true);
     }
 
-    function testFuzzSwapStatusConversion(uint8 status) public view {
+    function testSwapStatusConversion(uint8 status) public view {
         // Only test valid enum values (0-6)
         vm.assume(status <= 6);
         
@@ -155,7 +155,7 @@ contract StorageContractsTest is Test {
         assertEq(converted, status);
     }
     
-    function testFuzzSwapStatusReconversion(uint8 status) public view {
+    function testSwapStatusReconversion(uint8 status) public view {
         // Only test valid enum values (0-6)
         vm.assume(status <= 6);
         

@@ -22,22 +22,31 @@ contract MockSpokePool {
 
     // V3SpokePool interface function expected by AcrossIntegration
     function depositV3(
-        address depositor,
+        address, // depositor - unused
         address recipient,
         address inputToken,
-        address outputToken,
+        address, // outputToken - unused
         uint256 inputAmount,
-        uint256 outputAmount,
+        uint256, // outputAmount - unused
         uint256 destinationChainId,
-        address exclusiveRelayer,
-        uint32 quoteTimestamp,
-        uint32 fillDeadline,
-        uint32 exclusivityDeadline,
-        bytes calldata message
+        address, // exclusiveRelayer - unused
+        uint32,  // quoteTimestamp - unused
+        uint32,  // fillDeadline - unused
+        uint32,  // exclusivityDeadline - unused
+        bytes calldata // message - unused
     ) external payable {
         require(bridgeEnabled, "Bridge disabled");
         require(inputAmount > 0, "Invalid amount");
         
+        _executeBridge(inputToken, inputAmount, destinationChainId, recipient);
+    }
+    
+    function _executeBridge(
+        address inputToken,
+        uint256 inputAmount,
+        uint256 destinationChainId,
+        address recipient
+    ) internal {
         bytes32 bridgeId = keccak256(abi.encodePacked(
             inputToken,
             inputAmount,
@@ -48,13 +57,7 @@ contract MockSpokePool {
         
         bridgeRequests[bridgeId] = true;
         
-        // Emit with stored variables to avoid stack too deep
-        {
-            address token = inputToken;
-            uint256 amount = inputAmount;
-            uint256 chain = destinationChainId;
-            emit BridgeInitiated(bridgeId, token, amount, chain, recipient);
-        }
+        emit BridgeInitiated(bridgeId, inputToken, inputAmount, destinationChainId, recipient);
     }
 
     function initiateBridge(
