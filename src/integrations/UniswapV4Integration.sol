@@ -91,7 +91,7 @@ contract UniswapV4Integration is ImmutableState, Ownable {
     {
         PoolId poolId = key.toId();
         
-        (uint160 sqrtPriceX96, int24 tick, uint24 protocolFee, uint24 lpFee) = poolManager.getSlot0(poolId);
+        (uint160 sqrtPriceX96, int24 tick, uint24 protocolFee, uint24 lpFee) = StateLibrary.getSlot0(poolManager, poolId);
         
         state = PoolState({
             sqrtPriceX96: sqrtPriceX96,
@@ -110,7 +110,7 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         PoolId poolId = key.toId();
         
         // Get liquidity and fee growth data from V4 core
-        uint128 liquidity = poolManager.getLiquidity(poolId);
+        uint128 liquidity = StateLibrary.getLiquidity(poolManager, poolId);
         
         info = LiquidityInfo({
             liquidity: liquidity,
@@ -197,8 +197,8 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         PoolId poolId = key.toId();
         
         // Get current pool state
-        (uint160 sqrtPriceX96, int24 tick, , ) = poolManager.getSlot0(poolId);
-        uint128 liquidity = poolManager.getLiquidity(poolId);
+        (uint160 sqrtPriceX96, int24 tick, , ) = StateLibrary.getSlot0(poolManager, poolId);
+        uint128 liquidity = StateLibrary.getLiquidity(poolManager, poolId);
         
         depth = LiquidityDepth({
             totalLiquidity: uint256(liquidity),
@@ -340,7 +340,7 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         
         // Get current pool liquidity
         PoolId poolId = key.toId();
-        uint128 liquidity = poolManager.getLiquidity(poolId);
+        uint128 liquidity = StateLibrary.getLiquidity(poolManager, poolId);
         
         if (liquidity == 0) return type(uint256).max;
         
@@ -356,7 +356,7 @@ contract UniswapV4Integration is ImmutableState, Ownable {
 
     function _estimatePriceImpactBPS(PoolKey memory key, uint256 amountIn) internal view returns (uint256) {
         PoolId poolId = key.toId();
-        uint128 liquidity = poolManager.getLiquidity(poolId);
+        uint128 liquidity = StateLibrary.getLiquidity(poolManager, poolId);
         
         if (liquidity == 0) return type(uint256).max;
         

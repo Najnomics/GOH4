@@ -88,6 +88,7 @@ library CrossChainStorage {
     }
 
     function convertToSwapStatus(uint8 status) internal pure returns (ICrossChainManager.SwapStatus) {
+        require(status <= uint8(ICrossChainManager.SwapStatus.Recovered), "Invalid swap status");
         return ICrossChainManager.SwapStatus(status);
     }
 }

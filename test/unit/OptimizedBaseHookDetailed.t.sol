@@ -9,6 +9,7 @@ import {Currency, CurrencyLibrary} from "@uniswap/v4-core/src/types/Currency.sol
 import {SwapParams} from "@uniswap/v4-core/src/types/PoolOperation.sol";
 import {IHooks} from "@uniswap/v4-core/src/interfaces/IHooks.sol";
 import {Hooks} from "@uniswap/v4-core/src/libraries/Hooks.sol";
+import {HookMiner} from "@uniswap/v4-periphery/src/utils/HookMiner.sol";
 import {Errors} from "../../src/utils/Errors.sol";
 
 // Mock contracts for testing
@@ -125,10 +126,28 @@ contract OptimizedBaseHookDetailedTest is Test {
         token0 = new MockERC20("Token0", "TK0", 18);
         token1 = new MockERC20("Token1", "TK1", 18);
         
-        hook = new TestOptimizedBaseHook(
+        // Deploy hook using HookMiner to get correct address with BEFORE_SWAP_FLAG
+        uint160 flags = uint160(Hooks.BEFORE_SWAP_FLAG);
+        bytes memory creationCode = type(TestOptimizedBaseHook).creationCode;
+        bytes memory constructorArgs = abi.encode(
             IPoolManager(address(mockPoolManager)),
             owner
         );
+        
+        (address hookAddress, bytes32 salt) = HookMiner.find(
+            address(this),
+            flags,
+            creationCode,
+            constructorArgs
+        );
+        
+        hook = new TestOptimizedBaseHook{salt: salt}(
+            IPoolManager(address(mockPoolManager)),
+            owner
+        );
+        
+        // Verify hook was deployed at the correct address
+        require(address(hook) == hookAddress, "Hook deployed at wrong address");
         
         validPoolKey = PoolKey({
             currency0: Currency.wrap(address(token0)),
@@ -421,7 +440,18 @@ contract OptimizedBaseHookDetailedTest is Test {
         assertTrue(hook.beforeSwapCalled());
         
         // Reset the flag and test again
-        hook = new TestOptimizedBaseHook(IPoolManager(address(mockPoolManager)), owner);
+        uint160 flags = uint160(Hooks.BEFORE_SWAP_FLAG);
+        bytes memory creationCode = type(TestOptimizedBaseHook).creationCode;
+        bytes memory constructorArgs = abi.encode(IPoolManager(address(mockPoolManager)), owner);
+        
+        (address hookAddress, bytes32 salt) = HookMiner.find(
+            address(this),
+            flags,
+            creationCode,
+            constructorArgs
+        );
+        
+        hook = new TestOptimizedBaseHook{salt: salt}(IPoolManager(address(mockPoolManager)), owner);
         
         // Set up tokens again
         token0.mint(address(hook), 1000e18);

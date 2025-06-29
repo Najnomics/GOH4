@@ -16,11 +16,11 @@ contract TestStorageContract {
         GasOptimizationStorage.layout();
     }
     
-    function testSwapStatusConversion(ICrossChainManager.SwapStatus status) external pure returns (uint8) {
+    function convertSwapStatus(ICrossChainManager.SwapStatus status) external pure returns (uint8) {
         return CrossChainStorage.convertSwapStatus(status);
     }
     
-    function testSwapStatusReconversion(uint8 status) external pure returns (ICrossChainManager.SwapStatus) {
+    function convertToSwapStatus(uint8 status) external pure returns (ICrossChainManager.SwapStatus) {
         return CrossChainStorage.convertToSwapStatus(status);
     }
 }
@@ -56,24 +56,24 @@ contract StorageContractsTest is Test {
     
     function testSwapStatusConversions() public view {
         // Test all swap status conversions
-        assertEq(testContract.testSwapStatusConversion(ICrossChainManager.SwapStatus.Initiated), 0);
-        assertEq(testContract.testSwapStatusConversion(ICrossChainManager.SwapStatus.Bridging), 1);
-        assertEq(testContract.testSwapStatusConversion(ICrossChainManager.SwapStatus.Swapping), 2);
-        assertEq(testContract.testSwapStatusConversion(ICrossChainManager.SwapStatus.BridgingBack), 3);
-        assertEq(testContract.testSwapStatusConversion(ICrossChainManager.SwapStatus.Completed), 4);
-        assertEq(testContract.testSwapStatusConversion(ICrossChainManager.SwapStatus.Failed), 5);
-        assertEq(testContract.testSwapStatusConversion(ICrossChainManager.SwapStatus.Recovered), 6);
+        assertEq(testContract.convertSwapStatus(ICrossChainManager.SwapStatus.Initiated), 0);
+        assertEq(testContract.convertSwapStatus(ICrossChainManager.SwapStatus.Bridging), 1);
+        assertEq(testContract.convertSwapStatus(ICrossChainManager.SwapStatus.Swapping), 2);
+        assertEq(testContract.convertSwapStatus(ICrossChainManager.SwapStatus.BridgingBack), 3);
+        assertEq(testContract.convertSwapStatus(ICrossChainManager.SwapStatus.Completed), 4);
+        assertEq(testContract.convertSwapStatus(ICrossChainManager.SwapStatus.Failed), 5);
+        assertEq(testContract.convertSwapStatus(ICrossChainManager.SwapStatus.Recovered), 6);
     }
     
     function testSwapStatusReconversions() public view {
         // Test reverse conversions
-        assertTrue(testContract.testSwapStatusReconversion(0) == ICrossChainManager.SwapStatus.Initiated);
-        assertTrue(testContract.testSwapStatusReconversion(1) == ICrossChainManager.SwapStatus.Bridging);
-        assertTrue(testContract.testSwapStatusReconversion(2) == ICrossChainManager.SwapStatus.Swapping);
-        assertTrue(testContract.testSwapStatusReconversion(3) == ICrossChainManager.SwapStatus.BridgingBack);
-        assertTrue(testContract.testSwapStatusReconversion(4) == ICrossChainManager.SwapStatus.Completed);
-        assertTrue(testContract.testSwapStatusReconversion(5) == ICrossChainManager.SwapStatus.Failed);
-        assertTrue(testContract.testSwapStatusReconversion(6) == ICrossChainManager.SwapStatus.Recovered);
+        assertTrue(testContract.convertToSwapStatus(0) == ICrossChainManager.SwapStatus.Initiated);
+        assertTrue(testContract.convertToSwapStatus(1) == ICrossChainManager.SwapStatus.Bridging);
+        assertTrue(testContract.convertToSwapStatus(2) == ICrossChainManager.SwapStatus.Swapping);
+        assertTrue(testContract.convertToSwapStatus(3) == ICrossChainManager.SwapStatus.BridgingBack);
+        assertTrue(testContract.convertToSwapStatus(4) == ICrossChainManager.SwapStatus.Completed);
+        assertTrue(testContract.convertToSwapStatus(5) == ICrossChainManager.SwapStatus.Failed);
+        assertTrue(testContract.convertToSwapStatus(6) == ICrossChainManager.SwapStatus.Recovered);
     }
     
     function testCrossChainStorageSlot() public {
@@ -146,20 +146,20 @@ contract StorageContractsTest is Test {
         assertTrue(true);
     }
 
-    function testSwapStatusConversion(uint8 status) public view {
+    function testFuzzSwapStatusConversion(uint8 status) public view {
         // Only test valid enum values (0-6)
         vm.assume(status <= 6);
         
         ICrossChainManager.SwapStatus swapStatus = ICrossChainManager.SwapStatus(status);
-        uint8 converted = testContract.testSwapStatusConversion(swapStatus);
+        uint8 converted = testContract.convertSwapStatus(swapStatus);
         assertEq(converted, status);
     }
     
-    function testSwapStatusReconversion(uint8 status) public view {
+    function testFuzzSwapStatusReconversion(uint8 status) public view {
         // Only test valid enum values (0-6)
         vm.assume(status <= 6);
         
-        ICrossChainManager.SwapStatus reconverted = testContract.testSwapStatusReconversion(status);
+        ICrossChainManager.SwapStatus reconverted = testContract.convertToSwapStatus(status);
         assertEq(uint8(reconverted), status);
     }
 }
