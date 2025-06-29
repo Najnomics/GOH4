@@ -45,6 +45,22 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
         uint256 maxRelayerFeePct;     // Maximum relayer fee percentage (18 decimals)
     }
     
+    // Internal struct to avoid stack too deep errors
+    struct V3DepositParams {
+        address depositor;
+        address recipient;
+        address originToken;
+        address destinationToken;
+        uint256 amount;
+        uint256 outputAmount;
+        uint256 destinationChainId;
+        address exclusiveRelayer;
+        uint32 quoteTimestamp;
+        uint32 fillDeadline;
+        uint32 exclusivityDeadline;
+        bytes message;
+    }
+    
     BridgeFeeConfig public bridgeFeeConfig;
     
     // Relayer monitoring and optimization
@@ -164,6 +180,18 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
         nonReentrant 
         returns (bytes32 depositHash) 
     {
+        _validateDepositParams(params);
+        
+        // Generate deposit hash and setup state
+        depositHash = _setupDeposit(params);
+        
+        // Execute the bridge transaction
+        _executeBridgeDeposit(params, depositHash);
+
+        return depositHash;
+    }
+
+    function _validateDepositParams(BridgeParams calldata params) internal view {
         if (bridgePaused) {
             revert("Bridge operations are paused");
         }
@@ -176,14 +204,15 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
             revert InvalidBridgeAmount(params.amount);
         }
 
-        address spokePool = spokePools[block.chainid];
-        if (spokePool == address(0)) {
+        if (spokePools[block.chainid] == address(0)) {
             revert UnsupportedChain(block.chainid);
         }
 
         // Validate deposit amount limits
         _validateDepositLimits(params.originToken, params.amount, params.destinationChainId);
+    }
 
+    function _setupDeposit(BridgeParams calldata params) internal returns (bytes32 depositHash) {
         // Validate and optimize relayer fee
         int64 optimizedRelayerFee = _optimizeRelayerFee(params.relayerFeePct, params.originToken, params.amount);
 
@@ -191,7 +220,7 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
         depositHash = _generateDepositHash(params, nextDepositId);
 
         // Handle token transfer and approval
-        _handleTokenTransfer(params, spokePool);
+        _handleTokenTransfer(params, spokePools[block.chainid]);
 
         // Store deposit info with enhanced metadata
         bridgeStatuses[depositHash] = BridgeStatus({
@@ -214,21 +243,42 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
         depositHashToRelayer[depositHash] = optimalRelayer;
 
         nextDepositId++;
+    }
+
+    function _executeBridgeDeposit(BridgeParams calldata params, bytes32 depositHash) internal {
+        address spokePool = spokePools[block.chainid];
+        address optimalRelayer = depositHashToRelayer[depositHash];
+
+        // Pack parameters to avoid stack too deep
+        V3DepositParams memory depositParams = V3DepositParams({
+            depositor: params.depositor,
+            recipient: params.recipient,
+            originToken: params.originToken,
+            destinationToken: address(0),
+            amount: params.amount,
+            outputAmount: 0,
+            destinationChainId: params.destinationChainId,
+            exclusiveRelayer: address(0),
+            quoteTimestamp: params.quoteTimestamp,
+            fillDeadline: uint32(block.timestamp + 3600),
+            exclusivityDeadline: 0,
+            message: params.message
+        });
 
         // Execute deposit through Across V3 SpokePool
         try V3SpokePoolInterface(spokePool).depositV3{value: msg.value}(
-            params.depositor,
-            params.recipient,
-            params.originToken,
-            address(0), // destinationToken - will be same as origin for most cases
-            params.amount,
-            0, // outputAmount - 0 for exact input
-            params.destinationChainId,
-            address(0), // exclusiveRelayer - let market decide
-            params.quoteTimestamp,
-            uint32(block.timestamp + 3600), // fillDeadline - 1 hour
-            0, // exclusivityDeadline
-            params.message
+            depositParams.depositor,
+            depositParams.recipient,
+            depositParams.originToken,
+            depositParams.destinationToken,
+            depositParams.amount,
+            depositParams.outputAmount,
+            depositParams.destinationChainId,
+            depositParams.exclusiveRelayer,
+            depositParams.quoteTimestamp,
+            depositParams.fillDeadline,
+            depositParams.exclusivityDeadline,
+            depositParams.message
         ) {
             emit BridgeInitiated(
                 depositHash,
@@ -254,8 +304,6 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
             emit BridgeFailed(depositHash, "Low-level call failed");
             revert("Bridge execution failed");
         }
-
-        return depositHash;
     }
 
     /// @inheritdoc IAcrossProtocol

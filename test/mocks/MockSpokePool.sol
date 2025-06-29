@@ -48,7 +48,13 @@ contract MockSpokePool {
         
         bridgeRequests[bridgeId] = true;
         
-        emit BridgeInitiated(bridgeId, inputToken, inputAmount, destinationChainId, recipient);
+        // Emit with stored variables to avoid stack too deep
+        {
+            address token = inputToken;
+            uint256 amount = inputAmount;
+            uint256 chain = destinationChainId;
+            emit BridgeInitiated(bridgeId, token, amount, chain, recipient);
+        }
     }
 
     function initiateBridge(
