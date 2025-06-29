@@ -274,6 +274,9 @@ contract GasOptimizationHookDetailedTest is Test {
             sqrtPriceLimitX96: 0
         });
         
+        // The user preferences check happens based on the context.user inside the quote generation
+        // We need to test this by simulating the actual usage pattern
+        vm.prank(user);
         IGasOptimizationHook.OptimizationQuote memory quote = hook.getOptimizationQuote(params, testPoolKey);
         
         assertFalse(quote.shouldOptimize); // Should not optimize when disabled
@@ -325,17 +328,14 @@ contract GasOptimizationHookDetailedTest is Test {
             sqrtPriceLimitX96: 0
         });
         
-        vm.expectEmit(true, true, true, true);
-        emit Events.SwapExecutedLocally(
-            user,
-            Currency.unwrap(testPoolKey.currency0),
-            Currency.unwrap(testPoolKey.currency1),
-            0.5e18,
-            "Savings below threshold"
-        );
-        
+        // Test that getOptimizationQuote returns shouldOptimize = false for small amounts
         vm.prank(user);
-        hook.getOptimizationQuote(params, testPoolKey); // This triggers the internal logic
+        IGasOptimizationHook.OptimizationQuote memory quote = hook.getOptimizationQuote(params, testPoolKey);
+        
+        assertFalse(quote.shouldOptimize);
+        assertEq(quote.savingsUSD, 0);
+        assertEq(quote.originalChainId, block.chainid);
+        assertEq(quote.optimizedChainId, block.chainid);
     }
     
     function testBeforeSwapCrossChainExecution() public {

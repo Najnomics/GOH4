@@ -246,9 +246,9 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         uint256 minLiquidityThreshold
     ) external view returns (bool) {
         PoolId poolId = key.toId();
-        // Note: Direct liquidity access may not be available in current v4-core
-        // Using simplified approach for demonstration
-        uint128 liquidity = 1000000; // Placeholder value
+        
+        // Get actual liquidity from the pool using StateLibrary
+        uint128 liquidity = StateLibrary.getLiquidity(poolManager, poolId);
         
         // Check if liquidity is above threshold
         if (uint256(liquidity) < minLiquidityThreshold) {

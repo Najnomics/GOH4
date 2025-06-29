@@ -280,14 +280,17 @@ contract OptimizedBaseHookDetailedTest is Test {
     
     function testCalculateDeadline() public {
         uint256 additionalTime = 3600; // 1 hour
-        uint256 deadline = hook.testCalculateDeadline(additionalTime);
         
-        assertEq(deadline, block.timestamp + additionalTime);
+        // First calculation at default timestamp
+        uint256 deadline1 = hook.testCalculateDeadline(additionalTime);
+        assertEq(deadline1, 1 + additionalTime); // Should be 3601
         
-        // Test with different time
-        vm.warp(block.timestamp + 1000);
-        uint256 newDeadline = hook.testCalculateDeadline(additionalTime);
-        assertEq(newDeadline, block.timestamp + additionalTime);
+        // Warp time forward
+        vm.warp(1001);
+        
+        // Second calculation at new timestamp
+        uint256 deadline2 = hook.testCalculateDeadline(additionalTime);
+        assertEq(deadline2, 1001 + additionalTime); // Should be 4601
     }
     
     function testEmergencyWithdrawERC20() public {

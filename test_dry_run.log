@@ -1,0 +1,7 @@
+error: unexpected argument '--dry-run' found
+
+  tip: a similar argument exists: '--rerun'
+
+Usage: forge test --rerun [PATH]
+
+For more information, try '--help'.
