@@ -1,0 +1,31 @@
+{
+  "chainId": 8453,
+  "name": "Base",
+  "symbol": "ETH",
+  "rpcUrl": "${BASE_RPC_URL}",
+  "explorerUrl": "https://basescan.org",
+  "blockTime": 2,
+  "finalityTime": 1200,
+  "isL2": true,
+  "gasPrice": {
+    "base": 10000000,
+    "max": 1000000000,
+    "updateInterval": 300
+  },
+  "contracts": {
+    "ethUsdPriceFeed": "0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70",
+    "spokePool": "0x09aea4b2242abC8bb4BB78D537A67a245A7bEC64"
+  },
+  "tokens": {
+    "WETH": "0x4200000000000000000000000000000000000006",
+    "USDC": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "USDT": "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
+    "DAI": "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb"
+  },
+  "bridgeConfig": {
+    "enabled": true,
+    "maxBridgeAmount": "1000000000000000000000",
+    "minBridgeAmount": "1000000000000000000",
+    "bridgeFee": "500000000000000000"
+  }
+}

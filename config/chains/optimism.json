@@ -1,0 +1,31 @@
+{
+  "chainId": 10,
+  "name": "Optimism",
+  "symbol": "ETH",
+  "rpcUrl": "${OPTIMISM_RPC_URL}",
+  "explorerUrl": "https://optimistic.etherscan.io",
+  "blockTime": 2,
+  "finalityTime": 1200,
+  "isL2": true,
+  "gasPrice": {
+    "base": 1000000,
+    "max": 1000000000,
+    "updateInterval": 300
+  },
+  "contracts": {
+    "ethUsdPriceFeed": "0x13e3Ee699D1909E989722E753853AE30b17e08c5",
+    "spokePool": "0x6f26Bf09B1C792e3228e5467807a900A503c0281"
+  },
+  "tokens": {
+    "WETH": "0x4200000000000000000000000000000000000006",
+    "USDC": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
+    "USDT": "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
+    "DAI": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1"
+  },
+  "bridgeConfig": {
+    "enabled": true,
+    "maxBridgeAmount": "1000000000000000000000",
+    "minBridgeAmount": "1000000000000000000",
+    "bridgeFee": "500000000000000000"
+  }
+}

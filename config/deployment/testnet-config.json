@@ -1,0 +1,86 @@
+{
+  "networks": {
+    "sepolia": {
+      "chainId": 11155111,
+      "name": "Sepolia",
+      "rpcUrl": "${SEPOLIA_RPC_URL}",
+      "explorerUrl": "https://sepolia.etherscan.io",
+      "gasPrice": 20000000000,
+      "gasLimit": 5000000,
+      "confirmations": 2
+    },
+    "arbitrum-sepolia": {
+      "chainId": 421614,
+      "name": "Arbitrum Sepolia",
+      "rpcUrl": "${ARBITRUM_SEPOLIA_RPC_URL}",
+      "explorerUrl": "https://sepolia.arbiscan.io",
+      "gasPrice": 100000000,
+      "gasLimit": 5000000,
+      "confirmations": 1
+    },
+    "optimism-sepolia": {
+      "chainId": 11155420,
+      "name": "Optimism Sepolia",
+      "rpcUrl": "${OPTIMISM_SEPOLIA_RPC_URL}",
+      "explorerUrl": "https://sepolia-optimism.etherscan.io",
+      "gasPrice": 1000000,
+      "gasLimit": 5000000,
+      "confirmations": 1
+    },
+    "polygon-mumbai": {
+      "chainId": 80001,
+      "name": "Polygon Mumbai",
+      "rpcUrl": "${POLYGON_MUMBAI_RPC_URL}",
+      "explorerUrl": "https://mumbai.polygonscan.com",
+      "gasPrice": 30000000000,
+      "gasLimit": 5000000,
+      "confirmations": 2
+    },
+    "base-sepolia": {
+      "chainId": 84532,
+      "name": "Base Sepolia",
+      "rpcUrl": "${BASE_SEPOLIA_RPC_URL}",
+      "explorerUrl": "https://sepolia.basescan.org",
+      "gasPrice": 10000000,
+      "gasLimit": 5000000,
+      "confirmations": 1
+    }
+  },
+  "deployment": {
+    "deployer": "${DEPLOYER_ADDRESS}",
+    "privateKey": "${PRIVATE_KEY}",
+    "verify": true,
+    "broadcast": true,
+    "skipSimulation": false
+  },
+  "contracts": {
+    "gasOptimizationHook": {
+      "minSavingsThresholdBPS": 300,
+      "minAbsoluteSavingsUSD": "5000000000000000000",
+      "maxBridgeTime": 3600
+    },
+    "costCalculator": {
+      "baseBridgeFeeUSD": "1000000000000000000",
+      "bridgeFeePercentageBPS": 10,
+      "maxSlippageBPS": 100,
+      "gasEstimationMultiplier": 15000
+    },
+    "gasPriceOracle": {
+      "updateInterval": 600,
+      "maxGasPriceStaleness": 1200,
+      "initialKeeper": "${DEPLOYER_ADDRESS}"
+    }
+  },
+  "testnet": {
+    "enableDebugMode": true,
+    "allowHighSlippage": true,
+    "testTokenAmount": "1000000000000000000000",
+    "simulatedGasPrices": {
+      "11155111": 25000000000,
+      "421614": 200000000,
+      "11155420": 2000000,
+      "80001": 40000000000,
+      "84532": 20000000
+    }
+  }
+}

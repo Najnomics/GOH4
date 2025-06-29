@@ -1,0 +1,31 @@
+{
+  "chainId": 137,
+  "name": "Polygon",
+  "symbol": "MATIC",
+  "rpcUrl": "${POLYGON_RPC_URL}",
+  "explorerUrl": "https://polygonscan.com",
+  "blockTime": 2,
+  "finalityTime": 256,
+  "isL2": false,
+  "gasPrice": {
+    "base": 30000000000,
+    "max": 500000000000,
+    "updateInterval": 300
+  },
+  "contracts": {
+    "ethUsdPriceFeed": "0xF9680D99D6C9589e2a93a78A04A279e509205945",
+    "spokePool": "0x9295ee1d8C5b022Be115A2AD3c30C72E34e7F096"
+  },
+  "tokens": {
+    "WETH": "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+    "USDC": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+    "USDT": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+    "DAI": "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063"
+  },
+  "bridgeConfig": {
+    "enabled": true,
+    "maxBridgeAmount": "50000000000000000000",
+    "minBridgeAmount": "1000000000000000000",
+    "bridgeFee": "1000000000000000000"
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "crossChainTokens": {
+    "WETH": {
+      "symbol": "WETH",
+      "name": "Wrapped Ether",
+      "decimals": 18,
+      "chains": {
+        "1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "10": "0x4200000000000000000000000000000000000006",
+        "137": "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+        "8453": "0x4200000000000000000000000000000000000006",
+        "42161": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+      },
+      "priceFeeds": {
+        "1": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
+        "10": "0x13e3Ee699D1909E989722E753853AE30b17e08c5",
+        "137": "0xF9680D99D6C9589e2a93a78A04A279e509205945",
+        "8453": "0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70",
+        "42161": "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612"
+      }
+    },
+    "USDC": {
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "decimals": 6,
+      "chains": {
+        "1": "0xA0b86a33E6c4b4C2Cc6c1c4CdbBD0d8C7B4e5d2A",
+        "10": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
+        "137": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+        "8453": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "42161": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
+      },
+      "priceFeeds": {
+        "1": "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6",
+        "10": "0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3",
+        "137": "0xfE4A8cc5b5B2366C1B58Bea3858e81843581b2F7",
+        "8453": "0x7e860098F58bBFC8648a4311b374B1D669a2bc6B",
+        "42161": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3"
+      }
+    },
+    "USDT": {
+      "symbol": "USDT",
+      "name": "Tether USD",
+      "decimals": 6,
+      "chains": {
+        "1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        "10": "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
+        "137": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+        "8453": "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
+        "42161": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"
+      },
+      "priceFeeds": {
+        "1": "0x3E7d1eAB13ad0104d2750B8863b489D65364e32D",
+        "10": "0xECef79E109e997bCA29c1c0897ec9d7b03647F5E",
+        "137": "0x0A6513e40db6EB1b165753AD52E80663aeA50545",
+        "8453": "0xf19d560cDEAe4cfC442397e6f3328d74EB9A64b2",
+        "42161": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7"
+      }
+    },
+    "DAI": {
+      "symbol": "DAI",
+      "name": "Dai Stablecoin",
+      "decimals": 18,
+      "chains": {
+        "1": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+        "10": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1",
+        "137": "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063",
+        "8453": "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb",
+        "42161": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1"
+      },
+      "priceFeeds": {
+        "1": "0xAed0c38402d20D9df96b4b70e82cd7EAD5B80075",
+        "10": "0x8dBa75e83DA73cc766A7e5a0ee71F656BAb470d6",
+        "137": "0x4746DeC9e833A82EC7C2C1356372CcF2cfcD2F3D",
+        "8453": "0x591e79239a7d679378eC8c847e5038150364C78F",
+        "42161": "0xc5C8E77B397E531B8EC06BFb0048328B30E9eCfB"
+      }
+    }
+  },
+  "supportedTokens": ["WETH", "USDC", "USDT", "DAI"],
+  "bridgingPairs": [
+    {
+      "from": "WETH",
+      "to": "USDC",
+      "chains": [1, 10, 137, 8453, 42161]
+    },
+    {
+      "from": "USDC",
+      "to": "WETH",
+      "chains": [1, 10, 137, 8453, 42161]
+    },
+    {
+      "from": "USDT",
+      "to": "USDC",
+      "chains": [1, 10, 137, 8453, 42161]
+    },
+    {
+      "from": "DAI",
+      "to": "USDC",
+      "chains": [1, 10, 137, 8453, 42161]
+    }
+  ]
+}

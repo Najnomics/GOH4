@@ -1,0 +1,97 @@
+{
+  "networks": {
+    "ethereum": {
+      "chainId": 1,
+      "name": "Ethereum",
+      "rpcUrl": "${ETHEREUM_RPC_URL}",
+      "explorerUrl": "https://etherscan.io",
+      "gasPrice": 20000000000,
+      "gasLimit": 10000000,
+      "confirmations": 3
+    },
+    "arbitrum": {
+      "chainId": 42161,
+      "name": "Arbitrum",
+      "rpcUrl": "${ARBITRUM_RPC_URL}",
+      "explorerUrl": "https://arbiscan.io",
+      "gasPrice": 100000000,
+      "gasLimit": 10000000,
+      "confirmations": 2
+    },
+    "optimism": {
+      "chainId": 10,
+      "name": "Optimism",
+      "rpcUrl": "${OPTIMISM_RPC_URL}",
+      "explorerUrl": "https://optimistic.etherscan.io",
+      "gasPrice": 1000000,
+      "gasLimit": 10000000,
+      "confirmations": 2
+    },
+    "polygon": {
+      "chainId": 137,
+      "name": "Polygon",
+      "rpcUrl": "${POLYGON_RPC_URL}",
+      "explorerUrl": "https://polygonscan.com",
+      "gasPrice": 30000000000,
+      "gasLimit": 10000000,
+      "confirmations": 5
+    },
+    "base": {
+      "chainId": 8453,
+      "name": "Base",
+      "rpcUrl": "${BASE_RPC_URL}",
+      "explorerUrl": "https://basescan.org",
+      "gasPrice": 10000000,
+      "gasLimit": 10000000,
+      "confirmations": 2
+    }
+  },
+  "deployment": {
+    "deployer": "${DEPLOYER_ADDRESS}",
+    "privateKey": "${PRIVATE_KEY}",
+    "verify": true,
+    "broadcast": true,
+    "skipSimulation": false,
+    "multisig": "${MULTISIG_ADDRESS}",
+    "timelock": 86400
+  },
+  "contracts": {
+    "gasOptimizationHook": {
+      "minSavingsThresholdBPS": 500,
+      "minAbsoluteSavingsUSD": "10000000000000000000",
+      "maxBridgeTime": 1800
+    },
+    "costCalculator": {
+      "baseBridgeFeeUSD": "2000000000000000000",
+      "bridgeFeePercentageBPS": 5,
+      "maxSlippageBPS": 50,
+      "gasEstimationMultiplier": 12000
+    },
+    "gasPriceOracle": {
+      "updateInterval": 300,
+      "maxGasPriceStaleness": 600,
+      "initialKeeper": "${KEEPER_ADDRESS}"
+    },
+    "crossChainManager": {
+      "maxActiveSwapsPerUser": 10,
+      "emergencyTimeoutSeconds": 3600,
+      "bridgeProtocol": "across"
+    }
+  },
+  "security": {
+    "enableEmergencyPause": true,
+    "maxSlippageEmergency": 1000,
+    "pauseGuardian": "${PAUSE_GUARDIAN_ADDRESS}",
+    "upgradeTimelock": 172800
+  },
+  "monitoring": {
+    "enableAnalytics": true,
+    "metricsEndpoint": "${METRICS_ENDPOINT}",
+    "alertingWebhook": "${ALERTING_WEBHOOK}",
+    "performanceThresholds": {
+      "maxBridgeTime": 1800,
+      "minSuccessRate": 9500,
+      "maxGasPriceDeviation": 2000
+    }
+  }
+}

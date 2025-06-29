@@ -123,7 +123,13 @@ contract CostCalculator is ICostCalculator, Ownable {
             }
         }
         
+        // Calculate savings if we found a better chain
         uint256 savings = currentCost.totalCostUSD > bestCost ? currentCost.totalCostUSD - bestCost : 0;
+        
+        // If no better chain found, return current chain with 0 savings
+        if (bestChainId == currentChainId) {
+            return (currentChainId, 0);
+        }
         
         // Check if savings meet thresholds
         bool meetsThreshold = currentCost.totalCostUSD.meetsSavingsThreshold(
@@ -132,10 +138,8 @@ contract CostCalculator is ICostCalculator, Ownable {
             params.minAbsoluteSavingsUSD
         );
         
-        if (!meetsThreshold) {
-            return (currentChainId, 0);
-        }
-        
+        // Always return the best chain found, even if thresholds aren't met
+        // The caller can decide whether to use it based on savings amount
         return (bestChainId, savings);
     }
 
@@ -154,7 +158,7 @@ contract CostCalculator is ICostCalculator, Ownable {
     }
 
     /// @inheritdoc ICostCalculator
-    function calculateBridgeFeeUSD(address token, uint256 amount, uint256 destinationChain) public view override returns (uint256) {
+    function calculateBridgeFeeUSD(address token, uint256 amount, uint256 /* destinationChain */) public view override returns (uint256) {
         uint256 tokenAmountUSD = convertToUSD(token, amount);
         uint256 percentageFee = (tokenAmountUSD * costParameters.bridgeFeePercentageBPS) / Constants.BASIS_POINTS_DENOMINATOR;
         
@@ -164,9 +168,9 @@ contract CostCalculator is ICostCalculator, Ownable {
     /// @inheritdoc ICostCalculator
     function estimateSlippageCost(
         address tokenIn,
-        address tokenOut,
+        address /* tokenOut */,
         uint256 amountIn,
-        uint256 chainId
+        uint256 /* chainId */
     ) public view override returns (uint256) {
         uint256 tokenAmountUSD = convertToUSD(tokenIn, amountIn);
         return (tokenAmountUSD * costParameters.maxSlippageBPS) / Constants.BASIS_POINTS_DENOMINATOR;

@@ -25,6 +25,7 @@ interface ICrossChainManager {
         uint256 destinationChainId;
         uint256 initiatedAt;
         uint256 completedAt;
+        uint256 deadline;
         SwapStatus status;
         bytes32 bridgeTransactionId;
     }
@@ -48,21 +49,19 @@ interface ICrossChainManager {
     function emergencyRecovery(bytes32 swapId) external;
     function claimFailedSwap(bytes32 swapId) external;
 
-    // Status functions
+    // View functions
     function getSwapState(bytes32 swapId) external view returns (SwapState memory);
     function isSwapActive(bytes32 swapId) external view returns (bool);
     function getUserActiveSwaps(address user) external view returns (bytes32[] memory);
 
-    // Configuration functions
+    // Management functions
     function updateBridgeIntegration(address newBridgeIntegration) external;
     function updateChainConfiguration(uint256 chainId, bool enabled, uint256 maxGasPrice) external;
     function pauseCrossChainOperations(bool pause) external;
-
-    // Analytics functions
     function getSwapStatistics() external view returns (
-        uint256 totalSwaps,
-        uint256 successfulSwaps,
-        uint256 failedSwaps,
+        uint256 totalSwapsCount,
+        uint256 successfulSwapsCount,
+        uint256 failedSwapsCount,
         uint256 averageExecutionTime
     );
 }
