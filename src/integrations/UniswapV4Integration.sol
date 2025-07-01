@@ -89,9 +89,9 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         view 
         returns (PoolState memory state) 
     {
-        PoolId poolId = key.toId();
+        // PoolId poolId = key.toId(); // Currently unused but may be needed for future pool-specific logic
         
-        (uint160 sqrtPriceX96, int24 tick, uint24 protocolFee, uint24 lpFee) = StateLibrary.getSlot0(poolManager, poolId);
+        (uint160 sqrtPriceX96, int24 tick, uint24 protocolFee, uint24 lpFee) = StateLibrary.getSlot0(poolManager, key.toId());
         
         state = PoolState({
             sqrtPriceX96: sqrtPriceX96,
@@ -197,7 +197,7 @@ contract UniswapV4Integration is ImmutableState, Ownable {
         PoolId poolId = key.toId();
         
         // Get current pool state
-        (uint160 sqrtPriceX96, int24 tick, , ) = StateLibrary.getSlot0(poolManager, poolId);
+        (, int24 tick, , ) = StateLibrary.getSlot0(poolManager, poolId);
         uint128 liquidity = StateLibrary.getLiquidity(poolManager, poolId);
         
         depth = LiquidityDepth({
@@ -264,7 +264,7 @@ contract UniswapV4Integration is ImmutableState, Ownable {
     function getOptimalFeeTier(
         Currency currency0,
         Currency currency1,
-        uint256 swapAmount
+        uint256 /* swapAmount */
     ) external view returns (uint24 optimalFee, uint256 bestAmountOut) {
         uint24[4] memory fees = [uint24(100), uint24(500), uint24(3000), uint24(10000)]; // 0.01%, 0.05%, 0.3%, 1%
         bestAmountOut = 0;
@@ -334,7 +334,7 @@ contract UniswapV4Integration is ImmutableState, Ownable {
     function _calculatePriceImpactBPS(
         PoolKey memory key,
         SwapParams memory params,
-        uint256 amountOut
+        uint256 /* amountOut */
     ) internal view returns (uint256 priceImpact) {
         uint256 amountIn = uint256(params.amountSpecified > 0 ? params.amountSpecified : -params.amountSpecified);
         

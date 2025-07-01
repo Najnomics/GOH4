@@ -208,7 +208,7 @@ contract ChainlinkIntegration is IChainlinkAggregator, Ownable {
     }
 
     /// @inheritdoc IChainlinkAggregator
-    function calculateGasCostUSD(uint256 gasUsed, uint256 gasPrice, uint256 chainId) 
+    function calculateGasCostUSD(uint256 gasUsed, uint256 gasPrice, uint256 /* chainId */) 
         external 
         view 
         override 
@@ -232,13 +232,13 @@ contract ChainlinkIntegration is IChainlinkAggregator, Ownable {
         ethPriceFeeds[chainId] = priceFeed;
     }
 
-    function _getPriceFromFeed(address feedAddress, address token) private view returns (PriceData memory) {
+    function _getPriceFromFeed(address feedAddress, address /* token */) private view returns (PriceData memory) {
         try AggregatorV3Interface(feedAddress).latestRoundData() returns (
             uint80 roundId,
             int256 price,
-            uint256 startedAt,
+            uint256 /* startedAt */,
             uint256 updatedAt,
-            uint80 answeredInRound
+            uint80 /* answeredInRound */
         ) {
             if (price <= 0) {
                 return PriceData({

@@ -97,7 +97,7 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
 
     /// @inheritdoc IAcrossProtocol
     function getBridgeFeeQuote(
-        address originToken,
+        address /* originToken */,
         uint256 amount,
         uint256 destinationChainId
     ) external view override returns (uint256 bridgeFeeUSD, uint256 estimatedTime) {
@@ -297,7 +297,7 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
             _refundDeposit(params.depositor, params.originToken, params.amount);
             emit BridgeFailed(depositHash, reason);
             revert(reason);
-        } catch (bytes memory lowLevelData) {
+        } catch (bytes memory /* lowLevelData */) {
             // Handle low-level failures
             bridgeStatuses[depositHash].isFailed = true;
             _refundDeposit(params.depositor, params.originToken, params.amount);
@@ -566,7 +566,7 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
         }
     }
 
-    function _optimizeRelayerFee(int64 proposedFee, address token, uint256 amount) private view returns (int64) {
+    function _optimizeRelayerFee(int64 proposedFee, address /* token */, uint256 /* amount */) private view returns (int64) {
         uint256 absFee = proposedFee >= 0 ? uint256(int256(proposedFee)) : 0;
         
         // Ensure fee is within acceptable bounds
@@ -614,9 +614,9 @@ contract AcrossIntegration is IAcrossProtocol, Ownable, ReentrancyGuard {
     }
 
     function _calculateOptimalRelayerFee(
-        address token,
+        address /* token */,
         uint256 amount,
-        uint256 destinationChain,
+        uint256 /* destinationChain */,
         address relayer
     ) private view returns (uint256) {
         // Calculate base fee as percentage of transfer amount

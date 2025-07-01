@@ -131,12 +131,12 @@ contract CostCalculator is ICostCalculator, Ownable {
             return (currentChainId, 0);
         }
         
-        // Check if savings meet thresholds
-        bool meetsThreshold = currentCost.totalCostUSD.meetsSavingsThreshold(
-            bestCost,
-            params.minSavingsThresholdBPS,
-            params.minAbsoluteSavingsUSD
-        );
+        // Check if savings meet thresholds (not used in current logic but kept for future use)
+        // bool meetsThreshold = currentCost.totalCostUSD.meetsSavingsThreshold(
+        //     bestCost,
+        //     params.minSavingsThresholdBPS,
+        //     params.minAbsoluteSavingsUSD
+        // );
         
         // Always return the best chain found, even if thresholds aren't met
         // The caller can decide whether to use it based on savings amount
