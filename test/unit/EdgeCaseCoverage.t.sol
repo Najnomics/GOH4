@@ -76,14 +76,14 @@ contract EdgeCaseCoverageTest is Test {
     function testErrorsExistence() public {
         // Test that all error types can be created (for coverage)
         try this.throwZeroAddress() {
-            fail("Should have reverted");
+            fail();
         } catch (bytes memory data) {
             // Expected to catch the error
             assertTrue(data.length > 0);
         }
         
         try this.throwZeroAmount() {
-            fail("Should have reverted");
+            fail();
         } catch (bytes memory data) {
             assertTrue(data.length > 0);
         }
@@ -135,7 +135,7 @@ contract EdgeCaseCoverageTest is Test {
         uint256 destGas = 80000;
         uint256 bridgeGas = 50000;
         
-        uint256 totalGas = GasCalculations.calculateCrossChainGasUsage(
+        uint256 totalGas = GasCalculations.calculateCombinedGasUsage(
             sourceGas,
             destGas,
             bridgeGas

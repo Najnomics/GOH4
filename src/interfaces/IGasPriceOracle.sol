@@ -29,10 +29,19 @@ interface IGasPriceOracle {
 
     // Configuration functions
     function addChain(uint256 chainId, address ethUsdPriceFeed) external;
+    function removeChain(uint256 chainId) external;
     function updateKeeper(address newKeeper) external;
     function updateStalenessThreshold(uint256 newThreshold) external;
+    function setKeeper(address newKeeper) external; // Alias for updateKeeper
+    
+    // Emergency functions
+    function pause() external;
+    function unpause() external;
+    function paused() external view returns (bool);
 
     // Validation functions
     function validateGasPrice(uint256 chainId, uint256 gasPrice) external view returns (bool);
     function getSupportedChains() external view returns (uint256[] memory);
+    function supportedChains(uint256 chainId) external view returns (bool);
+    function keeper() external view returns (address);
 }

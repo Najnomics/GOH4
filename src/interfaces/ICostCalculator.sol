@@ -64,6 +64,7 @@ interface ICostCalculator {
     // Configuration functions
     function updateCostParameters(CostParameters calldata newParams) external;
     function updateTokenPriceFeed(address token, address priceFeed) external;
+    function getCostParameters() external view returns (CostParameters memory);
 
     // Utility functions
     function convertToUSD(address token, uint256 amount) external view returns (uint256);

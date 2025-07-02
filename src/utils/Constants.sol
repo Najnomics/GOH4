@@ -13,6 +13,7 @@ library Constants {
     uint256 constant MAX_GAS_PRICE = 1000 gwei;
     uint256 constant MIN_GAS_PRICE = 1 gwei;
     uint256 constant GAS_PRICE_STALENESS_THRESHOLD = 600; // 10 minutes
+    uint256 constant GAS_ESTIMATION_MULTIPLIER = 12000; // 1.2x (120% in basis points)
 
     // Basis points constants
     uint256 constant BASIS_POINTS_DENOMINATOR = 10000;

@@ -5,10 +5,13 @@ import {Test, console} from "forge-std/Test.sol";
 import {GasPriceOracle} from "../../src/core/GasPriceOracle.sol";
 import {CostCalculator} from "../../src/core/CostCalculator.sol";
 import {CrossChainManager} from "../../src/core/CrossChainManager.sol";
+import {ICostCalculator} from "../../src/interfaces/ICostCalculator.sol";
+import {ICrossChainManager} from "../../src/interfaces/ICrossChainManager.sol";
 import {MockChainlinkIntegration} from "../mocks/MockChainlinkIntegration.sol";
 import {MockSpokePool} from "../mocks/MockSpokePool.sol";
 import {Constants} from "../../src/utils/Constants.sol";
 import {Errors} from "../../src/utils/Errors.sol";
+import {Events} from "../../src/utils/Events.sol";
 
 /// @title Admin Functions and Error Scenarios Test
 /// @notice Tests for admin functions, error conditions, and edge cases
@@ -124,7 +127,9 @@ contract AdminAndErrorTest is Test {
             tokenOut: address(0x1002),
             amountIn: 1e18,
             gasLimit: 100000,
-            user: user
+            user: user,
+            gasUsed: 0,
+            gasPrice: 0
         });
 
         vm.expectRevert();
@@ -289,7 +294,7 @@ contract AdminAndErrorTest is Test {
         gasPrices[0] = 50e9;
 
         vm.expectEmit(true, true, true, true);
-        emit Events.GasPricesUpdated(chainIds, gasPrices);
+        emit Events.GasPriceUpdated(chainIds[0], gasPrices[0], block.timestamp);
         oracle.updateGasPrices(chainIds, gasPrices);
 
         vm.stopPrank();

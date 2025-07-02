@@ -57,7 +57,9 @@ interface ICrossChainManager {
     // Management functions
     function updateBridgeIntegration(address newBridgeIntegration) external;
     function updateChainConfiguration(uint256 chainId, bool enabled, uint256 maxGasPrice) external;
-    function pauseCrossChainOperations(bool pause) external;
+    function pauseCrossChainOperations(bool pauseState) external;
+    function pause() external;
+    function unpause() external;
     function getSwapStatistics() external view returns (
         uint256 totalSwapsCount,
         uint256 successfulSwapsCount,

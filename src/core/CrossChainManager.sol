@@ -220,9 +220,21 @@ contract CrossChainManager is ICrossChainManager, Ownable, ReentrancyGuard {
     }
 
     /// @inheritdoc ICrossChainManager
-    function pauseCrossChainOperations(bool pause) external override onlyOwner {
-        isPaused = pause;
-        emit Events.EmergencyPauseToggled(pause, msg.sender);
+    function pauseCrossChainOperations(bool pauseState) external override onlyOwner {
+        isPaused = pauseState;
+        emit Events.EmergencyPauseToggled(pauseState, msg.sender);
+    }
+
+    /// @inheritdoc ICrossChainManager
+    function pause() external override onlyOwner {
+        isPaused = true;
+        emit Events.EmergencyPauseToggled(true, msg.sender);
+    }
+
+    /// @inheritdoc ICrossChainManager
+    function unpause() external override onlyOwner {
+        isPaused = false;
+        emit Events.EmergencyPauseToggled(false, msg.sender);
     }
 
     /// @inheritdoc ICrossChainManager

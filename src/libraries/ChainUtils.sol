@@ -27,6 +27,13 @@ library ChainUtils {
             || chainId == Constants.BASE_CHAIN_ID;
     }
 
+    /// @notice Alias for isSupportedChain for test compatibility
+    /// @param chainId Chain ID to validate
+    /// @return isValid True if chain is valid/supported
+    function isValidChainId(uint256 chainId) internal pure returns (bool isValid) {
+        return isSupportedChain(chainId);
+    }
+
     /// @notice Get all supported chain IDs
     /// @return chainIds Array of supported chain IDs
     function getSupportedChains() internal pure returns (uint256[] memory chainIds) {
@@ -76,6 +83,18 @@ library ChainUtils {
     function isLayer2(uint256 chainId) internal pure returns (bool isL2) {
         return chainId == Constants.ARBITRUM_CHAIN_ID || chainId == Constants.OPTIMISM_CHAIN_ID
             || chainId == Constants.BASE_CHAIN_ID;
+    }
+
+    /// @notice Get gas multiplier for chain (in basis points)
+    /// @param chainId Chain ID
+    /// @return multiplier Gas multiplier in basis points (10000 = 100%)
+    function getGasMultiplier(uint256 chainId) internal pure returns (uint256 multiplier) {
+        if (chainId == Constants.ETHEREUM_CHAIN_ID) return 10000; // 100%
+        if (chainId == Constants.ARBITRUM_CHAIN_ID) return 11000; // 110%
+        if (chainId == Constants.OPTIMISM_CHAIN_ID) return 11000; // 110%
+        if (chainId == Constants.POLYGON_CHAIN_ID) return 12000; // 120%
+        if (chainId == Constants.BASE_CHAIN_ID) return 11000; // 110%
+        return 12000; // Default multiplier
     }
 
     /// @notice Get bridge time estimate to destination chain

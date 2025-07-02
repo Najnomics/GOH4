@@ -100,6 +100,15 @@ library GasCalculations {
         return baseGas;
     }
 
+    /// @notice Calculate total gas usage for cross-chain swap with custom values
+    /// @param sourceGas Gas usage on source chain
+    /// @param destGas Gas usage on destination chain  
+    /// @param bridgeGas Gas usage for bridge transaction
+    /// @return totalGasUsage Total estimated gas usage
+    function calculateCombinedGasUsage(uint256 sourceGas, uint256 destGas, uint256 bridgeGas) internal pure returns (uint256 totalGasUsage) {
+        return sourceGas + destGas + bridgeGas;
+    }
+
     /// @notice Validate gas price is within acceptable bounds
     /// @param gasPrice Gas price to validate
     /// @return isValid True if gas price is valid
@@ -120,5 +129,12 @@ library GasCalculations {
     /// @return percentage Percentage value (2 decimal places)
     function basisPointsToPercentage(uint256 basisPoints) internal pure returns (uint256 percentage) {
         return (basisPoints * 100) / Constants.BASIS_POINTS_DENOMINATOR;
+    }
+
+    /// @notice Convert percentage to basis points
+    /// @param percentage Percentage value
+    /// @return basisPoints Value in basis points
+    function percentageToBasisPoints(uint256 percentage) internal pure returns (uint256 basisPoints) {
+        return (percentage * Constants.BASIS_POINTS_DENOMINATOR) / 100;
     }
 }

@@ -19,13 +19,22 @@ contract GasPriceOracle is IGasPriceOracle, Ownable {
     mapping(uint256 => GasPrice) private gasPrices;
     mapping(uint256 => AggregatorV3Interface) private ethUsdPriceFeeds;
     mapping(uint256 => uint256[]) private gasPriceHistory;
+    mapping(uint256 => bool) private _supportedChains;
     
     address public keeper;
     uint256 public stalenessThreshold = Constants.GAS_PRICE_STALENESS_THRESHOLD;
+    bool private _paused;
     
     modifier onlyKeeper() {
         if (msg.sender != keeper && msg.sender != owner()) {
             revert Errors.UnauthorizedKeeper();
+        }
+        _;
+    }
+    
+    modifier whenNotPaused() {
+        if (_paused) {
+            revert Errors.EmergencyPauseActive();
         }
         _;
     }
@@ -69,7 +78,7 @@ contract GasPriceOracle is IGasPriceOracle, Ownable {
     }
 
     /// @inheritdoc IGasPriceOracle
-    function updateGasPrices(uint256[] calldata chainIds, uint256[] calldata gasPricesArray) external override onlyKeeper {
+    function updateGasPrices(uint256[] calldata chainIds, uint256[] calldata gasPricesArray) external override onlyKeeper whenNotPaused {
         if (chainIds.length != gasPricesArray.length) {
             revert Errors.ArrayLengthMismatch();
         }
@@ -174,11 +183,53 @@ contract GasPriceOracle is IGasPriceOracle, Ownable {
         }
         
         ethUsdPriceFeeds[chainId] = AggregatorV3Interface(ethUsdPriceFeed);
+        _supportedChains[chainId] = true;
         
         emit Events.GasPriceOracleConfigured(
             _getSingleChainArray(chainId),
             _getSingleAddressArray(ethUsdPriceFeed)
         );
+    }
+
+    /// @inheritdoc IGasPriceOracle
+    function removeChain(uint256 chainId) external override onlyOwner {
+        _supportedChains[chainId] = false;
+        delete ethUsdPriceFeeds[chainId];
+        delete gasPrices[chainId];
+    }
+
+    /// @inheritdoc IGasPriceOracle
+    function setKeeper(address newKeeper) external override onlyOwner {
+        if (newKeeper == address(0)) {
+            revert Errors.ZeroAddress();
+        }
+        
+        address oldKeeper = keeper;
+        keeper = newKeeper;
+        
+        emit Events.KeeperUpdated(oldKeeper, newKeeper);
+    }
+
+    /// @inheritdoc IGasPriceOracle
+    function pause() external override onlyOwner {
+        _paused = true;
+        emit Events.EmergencyPauseToggled(true, msg.sender);
+    }
+
+    /// @inheritdoc IGasPriceOracle
+    function unpause() external override onlyOwner {
+        _paused = false;
+        emit Events.EmergencyPauseToggled(false, msg.sender);
+    }
+
+    /// @inheritdoc IGasPriceOracle
+    function paused() external view override returns (bool) {
+        return _paused;
+    }
+
+    /// @inheritdoc IGasPriceOracle
+    function supportedChains(uint256 chainId) external view override returns (bool) {
+        return _supportedChains[chainId];
     }
 
     /// @inheritdoc IGasPriceOracle
@@ -215,6 +266,13 @@ contract GasPriceOracle is IGasPriceOracle, Ownable {
         ethUsdPriceFeeds[Constants.OPTIMISM_CHAIN_ID] = AggregatorV3Interface(0x13e3Ee699D1909E989722E753853AE30b17e08c5);
         ethUsdPriceFeeds[Constants.POLYGON_CHAIN_ID] = AggregatorV3Interface(0xF9680D99D6C9589e2a93a78A04A279e509205945);
         ethUsdPriceFeeds[Constants.BASE_CHAIN_ID] = AggregatorV3Interface(0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70);
+        
+        // Mark chains as supported
+        _supportedChains[Constants.ETHEREUM_CHAIN_ID] = true;
+        _supportedChains[Constants.ARBITRUM_CHAIN_ID] = true;
+        _supportedChains[Constants.OPTIMISM_CHAIN_ID] = true;
+        _supportedChains[Constants.POLYGON_CHAIN_ID] = true;
+        _supportedChains[Constants.BASE_CHAIN_ID] = true;
     }
 
     function _getSingleChainArray(uint256 chainId) private pure returns (uint256[] memory) {
