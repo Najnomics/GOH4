@@ -132,8 +132,61 @@ contract GasOptimizationHookDetailedTest is Test {
     PoolKey testPoolKey;
     
     function setUp() public {
-        // Skip hook deployment for now to avoid address validation issues
-        vm.skip(true);
+        // Create mock contracts
+        mockPoolManager = new MockPoolManager();
+        mockCostCalculator = new MockCostCalculator();
+        mockCrossChainManager = new MockCrossChainManager();
+        mockAcrossProtocol = new MockAcrossProtocol();
+        mockChainlinkIntegration = new MockChainlinkIntegration();
+        token0 = new MockERC20("Token0", "TKN0", 18);
+        token1 = new MockERC20("Token1", "TKN1", 18);
+        
+        // Use HookMiner to find a valid hook address
+        uint160 flags = uint160(Hooks.BEFORE_SWAP_FLAG);
+        bytes memory creationCode = type(GasOptimizationHook).creationCode;
+        bytes memory constructorArgs = abi.encode(
+            IPoolManager(address(mockPoolManager)),
+            owner,
+            address(mockCostCalculator),
+            address(mockCrossChainManager),
+            address(mockAcrossProtocol),
+            address(mockChainlinkIntegration)
+        );
+        
+        (address hookAddress, bytes32 salt) = HookMiner.find(
+            address(this),
+            flags,
+            creationCode,
+            constructorArgs
+        );
+        
+        // Deploy hook with the found salt
+        hook = new GasOptimizationHook{salt: salt}(
+            IPoolManager(address(mockPoolManager)),
+            owner,
+            address(mockCostCalculator),
+            address(mockCrossChainManager),
+            address(mockAcrossProtocol),
+            address(mockChainlinkIntegration)
+        );
+        
+        // Verify hook address matches
+        assertEq(address(hook), hookAddress);
+        
+        // Setup test tokens
+        token0.mint(address(hook), 1000e18);
+        token1.mint(address(hook), 1000e18);
+        token0.mint(user, 1000e18);
+        token1.mint(user, 1000e18);
+        
+        // Setup test pool key
+        testPoolKey = PoolKey({
+            currency0: Currency.wrap(address(token0)),
+            currency1: Currency.wrap(address(token1)), 
+            fee: 3000,
+            tickSpacing: 60,
+            hooks: IHooks(address(hook))
+        });
     }
     
     function testInitialization() public view {
@@ -169,7 +222,7 @@ contract GasOptimizationHookDetailedTest is Test {
         IGasOptimizationHook.OptimizationQuote memory quote = hook.getOptimizationQuote(params, testPoolKey);
         
         assertFalse(quote.shouldOptimize);
-        assertEq(quote.optimizedChainId, 1); // Current chain
+        assertEq(quote.optimizedChainId, block.chainid); // Current chain
         assertEq(quote.savingsUSD, 0);
     }
     

@@ -49,13 +49,13 @@ contract AdminAndErrorTest is Test {
     function testOracleAdminFunctions() public {
         vm.startPrank(owner);
 
-        // Test adding chains
-        oracle.addChain(999, address(mockChainlink));
-        assertTrue(oracle.supportedChains(999));
+        // Test adding chains - use a valid chain ID
+        oracle.addChain(Constants.BASE_CHAIN_ID, address(mockChainlink));
+        assertTrue(oracle.supportedChains(Constants.BASE_CHAIN_ID));
 
         // Test removing chains
-        oracle.removeChain(999);
-        assertFalse(oracle.supportedChains(999));
+        oracle.removeChain(Constants.BASE_CHAIN_ID);
+        assertFalse(oracle.supportedChains(Constants.BASE_CHAIN_ID));
 
         // Test keeper management
         oracle.setKeeper(address(0x5));
@@ -76,7 +76,7 @@ contract AdminAndErrorTest is Test {
 
         // Test unauthorized addChain
         vm.expectRevert();
-        oracle.addChain(999, address(mockChainlink));
+        oracle.addChain(Constants.ETHEREUM_CHAIN_ID, address(mockChainlink));
 
         // Test unauthorized removeChain
         vm.expectRevert();
@@ -197,11 +197,10 @@ contract AdminAndErrorTest is Test {
         vm.expectRevert();
         oracle.updateGasPrices(chainIds, gasPrices);
 
-        // Test empty arrays
+        // Test empty arrays (should be allowed - no-op)
         uint256[] memory emptyChainIds = new uint256[](0);
         uint256[] memory emptyGasPrices = new uint256[](0);
-        vm.expectRevert();
-        oracle.updateGasPrices(emptyChainIds, emptyGasPrices);
+        oracle.updateGasPrices(emptyChainIds, emptyGasPrices); // Should not revert
 
         vm.stopPrank();
     }

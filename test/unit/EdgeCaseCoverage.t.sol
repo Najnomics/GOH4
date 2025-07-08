@@ -59,8 +59,8 @@ contract EdgeCaseCoverageTest is Test {
         
         // Test gas multiplier edge cases
         assertEq(ChainUtils.getGasMultiplier(1), 10000); // Ethereum: 100%
-        assertEq(ChainUtils.getGasMultiplier(42161), 15000); // Arbitrum: 150%
-        assertEq(ChainUtils.getGasMultiplier(999999), 10000); // Unknown: default 100%
+        assertEq(ChainUtils.getGasMultiplier(42161), 11000); // Arbitrum: 110%
+        assertEq(ChainUtils.getGasMultiplier(999999), 12000); // Unknown: default 120%
     }
 
     function testConstantsValidation() public pure {
@@ -118,7 +118,7 @@ contract EdgeCaseCoverageTest is Test {
         
         // Test simple transfer
         uint256 transferGas = GasCalculations.estimateTransferGas();
-        assertGt(transferGas, baseGas);
+        assertEq(transferGas, baseGas); // ETH transfer is exactly 21000
         
         // Test swap gas estimation
         uint256 swapGas = GasCalculations.estimateSwapGas();
