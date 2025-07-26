@@ -40,9 +40,12 @@ export const anvil = {
     },
 } as const;
 
+// Get WalletConnect project ID from environment or use default
+const projectId = (import.meta as any).env?.VITE_WALLET_CONNECT_PROJECT_ID || '025acf6134d38681e310bb7e00022000';
+
 export const config = getDefaultConfig({
     appName: 'Gas Optimization Hook',
-    projectId: import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || '025acf6134d38681e310bb7e00022000',
+    projectId,
     chains: [anvil, mainnet, sepolia, polygon, optimism, arbitrum, base],
     wallets: [
         {

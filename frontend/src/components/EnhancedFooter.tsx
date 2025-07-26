@@ -1,6 +1,6 @@
 import {
     Twitter,
-    Discord,
+    MessageCircle,
     Github,
     ExternalLink,
     Mail,
@@ -54,7 +54,7 @@ export default function EnhancedFooter() {
 
     const socialLinks = [
         { icon: Twitter, href: '#', label: 'Twitter' },
-        { icon: Discord, href: '#', label: 'Discord' },
+        { icon: MessageCircle, href: '#', label: 'Discord' },
         { icon: Github, href: '#', label: 'GitHub' },
         { icon: Mail, href: '#', label: 'Email' },
     ];

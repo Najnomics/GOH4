@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { AnimatePresence } from 'framer-motion'
 import EnhancedHeader from './components/EnhancedHeader'
 import EnhancedSwapInterface from './components/EnhancedSwapInterface'
 import GasOptimizationPanel from './components/GasOptimizationPanel'

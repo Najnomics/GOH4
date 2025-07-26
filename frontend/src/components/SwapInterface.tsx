@@ -1,8 +1,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUpDown, Settings, AlertTriangle, CheckCircle, Zap, Info } from 'lucide-react';
+import { ArrowUpDown, Settings, AlertTriangle, Zap, Info } from 'lucide-react';
 import { useAccount, useBalance } from 'wagmi';
-import { parseUnits, formatUnits } from 'viem';
+import { formatUnits } from 'viem';
 import clsx from 'clsx';
 
 interface Token {

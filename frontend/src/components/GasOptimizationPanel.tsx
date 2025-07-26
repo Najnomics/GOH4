@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, TrendingDown, Clock, Network, Shield, Info, ArrowRight } from 'lucide-react';
+import { Zap, Clock, Network, Shield, Info, ArrowRight } from 'lucide-react';
 import clsx from 'clsx';
 
 interface ChainData {
@@ -110,14 +110,7 @@ export default function GasOptimizationPanel() {
         }
     };
 
-    const getStatusBg = (status: string) => {
-        switch (status) {
-            case 'optimal': return 'bg-uniswap-green/10';
-            case 'moderate': return 'bg-uniswap-yellow/10';
-            case 'expensive': return 'bg-uniswap-pink/10';
-            default: return 'bg-background-tertiary';
-        }
-    };
+
 
     if (!optimizationData) {
         return (

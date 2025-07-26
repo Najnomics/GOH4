@@ -6,7 +6,6 @@ import {
     Menu,
     X,
     Bell,
-    ChevronDown,
     ExternalLink,
     HelpCircle,
     MessageCircle,
@@ -82,8 +81,8 @@ export default function EnhancedHeader({ activeTab, onTabChange }: EnhancedHeade
                                     key={item.id}
                                     onClick={() => onTabChange(item.id)}
                                     className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 ${activeTab === item.id
-                                            ? 'bg-uniswap-pink text-white shadow-lg shadow-uniswap-pink/25'
-                                            : 'text-text-secondary hover:text-text-primary hover:bg-background-tertiary'
+                                        ? 'bg-uniswap-pink text-white shadow-lg shadow-uniswap-pink/25'
+                                        : 'text-text-secondary hover:text-text-primary hover:bg-background-tertiary'
                                         }`}
                                 >
                                     <Icon className="w-4 h-4" />
@@ -224,8 +223,8 @@ export default function EnhancedHeader({ activeTab, onTabChange }: EnhancedHeade
                                                 setIsMobileMenuOpen(false);
                                             }}
                                             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-colors ${activeTab === item.id
-                                                    ? 'bg-uniswap-pink text-white'
-                                                    : 'text-text-secondary hover:text-text-primary hover:bg-background-tertiary'
+                                                ? 'bg-uniswap-pink text-white'
+                                                : 'text-text-secondary hover:text-text-primary hover:bg-background-tertiary'
                                                 }`}
                                         >
                                             <Icon className="w-4 h-4" />

@@ -1,10 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
     TrendingUp,
-    TrendingDown,
     DollarSign,
-    Clock,
     Zap,
     BarChart3,
     ArrowUpRight,
@@ -60,7 +58,6 @@ const chainData: ChainData[] = [
 
 export default function AnalyticsDashboard() {
     const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d' | '1y'>('7d');
-    const [selectedMetric, setSelectedMetric] = useState<'volume' | 'swaps' | 'savings'>('volume');
 
     const formatNumber = (num: number) => {
         if (num >= 1000000) {

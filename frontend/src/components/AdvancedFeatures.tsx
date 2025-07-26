@@ -1,15 +1,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    Settings, 
-    Zap, 
-    TrendingUp, 
-    Shield, 
-    Clock, 
-    DollarSign,
+import {
+    Settings,
+    Zap,
+    TrendingUp,
+    Shield,
+    Clock,
     ChevronDown,
     ChevronUp,
-    Info,
     AlertTriangle
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -112,7 +110,7 @@ export default function AdvancedFeatures() {
                         {/* Basic Settings */}
                         <div className="space-y-4">
                             <h4 className="font-medium text-text-primary">Transaction Settings</h4>
-                            
+
                             {/* Slippage Tolerance */}
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
@@ -203,7 +201,7 @@ export default function AdvancedFeatures() {
                                     className="space-y-4 p-4 bg-background-primary rounded-xl border border-border-primary"
                                 >
                                     <h4 className="font-medium text-text-primary">Limit Order Settings</h4>
-                                    
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-text-secondary">Limit Price</label>
@@ -215,7 +213,7 @@ export default function AdvancedFeatures() {
                                                 className="w-full px-3 py-2 bg-background-tertiary border border-border-primary rounded-lg text-text-primary focus:outline-none focus:border-uniswap-pink"
                                             />
                                         </div>
-                                        
+
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-text-secondary">Expiry (hours)</label>
                                             <select
