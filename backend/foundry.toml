@@ -20,6 +20,19 @@ optimizer = true
 optimizer_runs = 200
 via_ir = true
 
+[rpc_endpoints]
+ethereum = "${ETHEREUM_RPC_URL}"
+arbitrum = "${ARBITRUM_RPC_URL}"
+optimism = "${OPTIMISM_RPC_URL}"
+polygon = "${POLYGON_RPC_URL}"
+base = "${BASE_RPC_URL}"
+unichain_sepolia = "${UNICHAIN_SEPOLIA_RPC}"
+
+[etherscan]
+ethereum = { key = "${ETHERSCAN_API_KEY}" }
+arbitrum = { key = "${ARBISCAN_API_KEY}" }
+polygon = { key = "${POLYGONSCAN_API_KEY}" }
+
 [fmt]
 line_length = 120
 tab_width = 4
